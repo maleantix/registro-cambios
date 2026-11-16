@@ -138,7 +138,6 @@ button:disabled{opacity:.55;cursor:wait}
     <div id="lUrlBox"><label>URL del script de Google (acaba en /exec)<input id="lUrl" placeholder="https://script.google.com/macros/s/…/exec"></label></div>
     <div id="lError"></div>
     <button id="lEntrar" class="primary big" type="submit">Entrar</button>
-    <button id="lCambiarUrl" class="link" type="button">Cambiar la URL del script</button>
   </form>
 </div>
 <header>
@@ -149,7 +148,7 @@ button:disabled{opacity:.55;cursor:wait}
     <button id="btnExport" title="Descarga una copia de seguridad de todos los procesos">Exportar</button>
     <label class="btn" title="Carga una copia exportada">Importar<input type="file" id="fileImport" accept=".json,application/json" hidden></label>
   </div>
-  <div id="userBox"><span class="avatar" id="avatar">?</span><span id="userName"></span><button id="btnSalir" title="Cerrar sesión">Salir</button></div>
+  <div id="userBox"><span class="avatar" id="avatar">?</span><span id="userName"></span><button id="btnConfig" title="Configuración">⚙</button><button id="btnSalir" title="Cerrar sesión">Salir</button></div>
 </header>
 
 <div class="layout">
@@ -218,6 +217,16 @@ button:disabled{opacity:.55;cursor:wait}
   <input id="nBuscar" placeholder="Buscar por proceso o ID…" style="margin-top:10px">
   <ul id="nLista"></ul>
   <div id="nubeMsg"></div>
+</dialog>
+
+<dialog id="dlgConfig">
+  <div class="dhead"><h2>⚙ Configuración</h2><button data-close title="Cerrar">✕</button></div>
+  <form id="formConfig">
+    <label>URL del script de Google (acaba en /exec)<input id="cUrl" placeholder="https://script.google.com/macros/s/…/exec"></label>
+    <p class="ayuda" style="margin-top:8px">Solo hace falta cambiarla si haces una implementación nueva del script. Al cambiarla tendrás que volver a entrar.</p>
+    <div id="cError" style="color:var(--danger);font-weight:600;min-height:18px"></div>
+    <div class="dfoot"><span></span><button class="primary" type="submit">Guardar</button></div>
+  </form>
 </dialog>
 
 <dialog id="dlgImg"><img alt="Captura"></dialog>
@@ -760,7 +769,6 @@ button:disabled{opacity:.55;cursor:wait}
     document.body.classList.add('bloqueado');
     $('#lUsuario').value = cfg.usuario || ''; $('#lClave').value = ''; $('#lUrl').value = cfg.url || '';
     $('#lUrlBox').style.display = cfg.url ? 'none' : '';
-    $('#lCambiarUrl').style.display = cfg.url ? '' : 'none';
     $('#lError').textContent = aviso ? '⚠ ' + aviso : '';
     (!cfg.url ? $('#lUrl') : cfg.usuario ? $('#lClave') : $('#lUsuario')).focus();
   }
@@ -771,7 +779,6 @@ button:disabled{opacity:.55;cursor:wait}
     $('#avatar').textContent = (c.usuario || '?').charAt(0).toUpperCase();
     pintarEstado();
   }
-  $('#lCambiarUrl').onclick = () => { $('#lUrlBox').style.display = ''; $('#lCambiarUrl').style.display = 'none'; $('#lUrl').focus(); };
   $('#formLogin').addEventListener('submit', async ev => {
     ev.preventDefault();
     const url = $('#lUrl').value.trim(), usuario = $('#lUsuario').value.trim(), contrasena = $('#lClave').value;
@@ -783,7 +790,11 @@ button:disabled{opacity:.55;cursor:wait}
       const r = await api('login', { usuario, contrasena });
       guardarCfg({ url, usuario, token: r.token });
       mostrarApp(); toast('Hola, ' + usuario);
-    } catch (e) { $('#lError').textContent = '⚠ ' + e.message; }
+    } catch (e) {
+      $('#lError').textContent = '⚠ ' + e.message;
+      // si no conecta con el script, deja ver/cambiar la URL
+      if (/conectar con el script|no ha respondido bien/.test(e.message)) $('#lUrlBox').style.display = '';
+    }
     finally { b.disabled = false; b.textContent = 'Entrar'; }
   });
   $('#btnSalir').onclick = async () => {
@@ -809,6 +820,15 @@ button:disabled{opacity:.55;cursor:wait}
     pintarEstado();
   }
   $('#btnNube').onclick = () => abrirNube();
+  $('#btnConfig').onclick = () => { $('#cUrl').value = leerCfg().url || ''; $('#cError').textContent = ''; $('#dlgConfig').showModal(); $('#cUrl').focus(); };
+  $('#formConfig').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const url = $('#cUrl').value.trim(), c = leerCfg();
+    if (!/^https:\/\/script\.google(usercontent)?\.com\/.+\/exec/.test(url)) { $('#cError').textContent = '⚠ La URL debe ser la del script y acabar en /exec'; return; }
+    if (url === c.url) { $('#dlgConfig').close(); return; }
+    guardarCfg({ url, usuario: c.usuario, token: '' });
+    mostrarLogin('URL cambiada. Entra de nuevo.');
+  });
   $('#btnRefrescar').onclick = () => cargarListaNube();
   let listaNube = [];
   async function cargarListaNube() {
