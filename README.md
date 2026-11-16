@@ -33,14 +33,14 @@ Se hace una sola vez:
    - Quién tiene acceso: **Cualquier usuario** (la contraseña es la que protege los datos)
 4. Pulsa **Implementar** y autoriza el acceso. Google avisa de que la app no está verificada porque es tuya: **Configuración avanzada → Ir a … (no seguro)** → Permitir.
 5. Copia la **URL de la aplicación web** (acaba en `/exec`).
-6. En la herramienta: **☁ Google Sheets** → pega la URL, tu usuario y tu contraseña → **Entrar**. La sesión dura 30 días.
+6. Abre la herramienta: sale la pantalla **Acceder**. Pon tu usuario, tu contraseña y, solo la primera vez, la URL `/exec` → **Entrar**. La sesión no caduca nunca; arriba a la derecha tienes tu usuario y el botón **Salir**, que es lo único que la cierra.
 
 Uso:
 
 - **☁ Guardar en Google** sube las capturas nuevas a la carpeta de Drive «Registro de cambios - capturas» y escribe en la pestaña **Registros** una fila por cada contenido: fecha, proceso, ID, pestaña, ID, contenido, ID, cambios y enlaces a las capturas.
 - Si vuelves a guardar el mismo registro, sus filas se sustituyen (no se duplican) y las capturas ya subidas no se vuelven a subir.
 - Abajo a la izquierda ves si el registro tiene cambios sin guardar en Google.
-- En **☁ Google Sheets** tienes la lista de todo lo guardado; haz clic en un registro para abrirlo en la herramienta, con sus capturas, desde cualquier ordenador.
+- En **☁ Guardados en Google** tienes la lista de todo lo guardado; haz clic en un registro para abrirlo en la herramienta, con sus capturas, desde cualquier ordenador.
 - Si cambias algo en `Code.gs`: **Implementar → Gestionar implementaciones → ✏️ → Versión: nueva versión**. La URL no cambia.
 
 ## Dónde se guardan los datos
