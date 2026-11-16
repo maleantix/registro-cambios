@@ -119,6 +119,32 @@ label.auto input{width:auto;margin-top:2px}
 #toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(20px);background:#333;color:#fff;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%)}
 #toast.err{background:var(--danger)}
+/* inicio y modos */
+.inicio{text-align:center;padding:52px 24px}
+.inicio h2{margin:0 0 8px;font-size:22px}
+.inicio .ayuda{max-width:520px;margin:0 auto}
+.inicio-btns{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+.inicio-btns .big{width:auto;min-width:230px}
+body.sin-registro #editor,body.sin-registro .bar{display:none}
+body:not(.sin-registro) #inicio{display:none}
+header h1{cursor:pointer}
+#banner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-weight:600}
+#banner.lectura{background:#eef2f7;border:1px solid #d5dde8;color:#2d3a4a}
+#banner.edicion{background:#fff1e5;border:1px solid #ffd2ad;color:var(--ac2)}
+#banner .txt{flex:1;min-width:220px}
+body.lectura [data-a=up],body.lectura [data-a=down],body.lectura [data-a=dup],body.lectura [data-a=del],
+body.lectura [data-a=gup],body.lectura [data-a=gdown],body.lectura [data-a=gdel],body.lectura [data-a=cadd],
+body.lectura [data-a=izq],body.lectura [data-a=der],body.lectura [data-a=qimg],
+body.lectura .add,body.lectura .gfoot,body.lectura #btnMismo,body.lectura #btnBorrar,body.lectura .entrada.c-vacio,body.lectura .grupo.g-vacio{display:none!important}
+body.lectura .capturas{cursor:default;border-style:solid;border-color:#eee}
+body.lectura .capturas .hint{display:none}
+body.lectura .capturas:not(:has(figure)){display:none}
+body.lectura #editor input,body.lectura #editor textarea{background:#fafafa;color:#333}
+body.lectura .entrada.activa{border-color:var(--bd);box-shadow:none}
+#buscar.destacar{outline:3px solid var(--ac);outline-offset:1px}
+aside li.grp-proc{padding:12px 8px 3px;font-weight:700;font-size:13px;cursor:default;border:none;background:none}
+aside li.grp-proc small{display:block;font-weight:400;color:var(--mut);font-size:11px;overflow-wrap:anywhere}
+aside li.reg.fecha{padding-left:16px}
 #pantallaLogin{display:none;position:fixed;inset:0;background:var(--bg);z-index:100;place-items:center;padding:20px}
 body.bloqueado #pantallaLogin{display:grid}
 body.bloqueado header,body.bloqueado .layout,body.bloqueado .bar{display:none}
@@ -144,7 +170,7 @@ button:disabled{opacity:.55;cursor:wait}
 @media (max-width:820px){.layout{grid-template-columns:1fr}aside{position:static;max-height:220px}.row,.ehead,.ghead{flex-wrap:wrap}.conts,.gfoot{padding-left:12px}}
 </style>
 </head>
-<body class="bloqueado">
+<body class="bloqueado sin-registro">
 <div id="pantallaLogin">
   <form id="formLogin" class="loginbox" autocomplete="on">
     <span class="marca">Registro de cambios</span>
@@ -158,7 +184,7 @@ button:disabled{opacity:.55;cursor:wait}
   </form>
 </div>
 <header>
-  <h1>Registro de cambios</h1>
+  <h1 id="irInicio" title="Ir al inicio">Registro de cambios</h1>
   <div class="actions">
     <button id="btnNuevo" class="primary">+ Nuevo proceso</button>
     <button id="btnNube" title="Ver y abrir los registros guardados en tu hoja de Google">☁ Guardados en Google</button>
@@ -175,6 +201,17 @@ button:disabled{opacity:.55;cursor:wait}
   </aside>
 
   <main>
+    <section id="inicio" class="card inicio">
+      <h2>¿Qué quieres hacer?</h2>
+      <p class="ayuda">Tus registros están a la izquierda, agrupados por fecha. Al abrir uno se ve en <b>modo consulta</b>, para que no cambies nada por error.</p>
+      <div class="inicio-btns">
+        <button id="btnInicioNuevo" class="primary big">＋ Añadir proceso</button>
+        <button id="btnInicioBuscar" class="big">🔍 Buscar proceso</button>
+      </div>
+    </section>
+
+    <div id="editor">
+    <div id="banner"></div>
     <section class="card proc">
       <span class="tag">PROCESO (PAPÁ)</span>
       <div class="row">
@@ -183,7 +220,7 @@ button:disabled{opacity:.55;cursor:wait}
         <label class="small">Fecha<input id="pFecha" data-p="fecha" type="date"></label>
       </div>
       <label>Notas generales (opcional)<textarea id="pNotas" data-p="notas" rows="2" placeholder="Motivo del cambio, petición, etc."></textarea></label>
-      <div class="procfoot"><button id="btnCopiarNomId" title="Copia «Nombre-ID» para ponerlo entre los corchetes de Publicar/modificar [ ] en Confluence">📋 Copiar nombre-ID</button><button id="btnCopiarNom" title="Copia solo el nombre del proceso">📋 Nombre</button><button id="btnCopiarId" title="Copia solo el ID del proceso">📋 ID</button><span style="flex:1"></span><button id="btnMismo" class="link" title="Crea un registro aparte, con la fecha de hoy y el mismo nombre e ID de proceso">↻ Otro cambio en este proceso (otro día)</button></div>
+      <div class="procfoot"><button id="btnCopiarNomId" title="Copia «Nombre-ID» para ponerlo entre los corchetes de Publicar/modificar [ ] en Confluence">📋 Copiar nombre-ID</button><button id="btnCopiarNom" title="Copia solo el nombre del proceso">📋 Nombre</button><button id="btnCopiarId" title="Copia solo el ID del proceso">📋 ID</button></div>
     </section>
 
     <div id="estructura"></div>
@@ -192,6 +229,7 @@ button:disabled{opacity:.55;cursor:wait}
       <button id="btnAddPest">+ Pestaña</button>
       <button id="btnAddDirecto" title="Contenido que cuelga directamente del proceso, sin pestaña">+ Contenido sin pestaña</button>
       <button id="btnLista">+ Varias desde una lista</button>
+    </div>
     </div>
   </main>
 </div>
@@ -253,6 +291,15 @@ button:disabled{opacity:.55;cursor:wait}
     <p>1) Rellena el <b>proceso (papá)</b> con nombre e ID. 2) Añade sus <b>pestañas</b> (título e ID) o, si no tiene, <b>contenidos sin pestaña</b>. 3) En cada <b>contenido</b>: título, ID, qué has cambiado y la captura (clic en el recuadro de puntos y <kbd>Ctrl</kbd>+<kbd>V</kbd>). 4) Al acabar: <b>Pegado paso a paso</b> para Confluence y <b>☁ Guardar en Google</b>.</p>
     <p>Todo se guarda solo en este navegador mientras escribes. En Google solo se guarda al pulsar <b>☁ Guardar en Google</b>.</p>
 
+    <h3>Inicio, consulta y edición</h3>
+    <dl>
+      <dt>Al entrar</dt><dd>Sale el inicio, sin ningún registro abierto: <b>＋ Añadir proceso</b> o <b>🔍 Buscar proceso</b>. Clic en el título «Registro de cambios» para volver al inicio.</dd>
+      <dt>👁 Modo consulta</dt><dd>Al abrir un registro de la lista se ve en consulta: no se puede cambiar nada por error, pero sí copiar y hacer el pegado paso a paso.</dd>
+      <dt>✏️ Editar</dt><dd>Desbloquea el registro para cambiarlo.</dd>
+      <dt>✓ Terminar edición</dt><dd>Lo vuelve a bloquear y lo guarda en Google automáticamente. También se guarda en Google al pulsar <b>← Inicio</b> o abrir otro registro mientras editas.</dd>
+      <dt>↻ Nuevo cambio en este proceso (hoy)</dt><dd>Para cuando vuelves a tocar un proceso que ya hiciste otro día: crea un registro nuevo con la fecha de hoy y el mismo nombre e ID. El registro anterior queda como estaba.</dd>
+    </dl>
+
     <h3>Arriba</h3>
     <dl>
       <dt>+ Nuevo proceso</dt><dd>Empieza un registro nuevo en blanco (otro papá).</dd>
@@ -268,6 +315,7 @@ button:disabled{opacity:.55;cursor:wait}
     <dl>
       <dt>Buscador</dt><dd>Busca por nombre o ID de proceso, pestaña o contenido.</dd>
       <dt>Grupos</dt><dd>Los registros salen agrupados por fecha: Hoy, Ayer y los días anteriores.</dd>
+      <dt>Al buscar</dt><dd>Los resultados salen agrupados por proceso, con debajo cada fecha en la que lo tocaste. Clic en una fecha para ver los cambios de ese día.</dd>
       <dt>● naranja</dt><dd>Ese registro tiene cambios sin guardar en Google. Gris: ya está guardado.</dd>
       <dt>Número</dt><dd>Cuántos contenidos tiene. Pasa el ratón por encima para ver el ID y los detalles.</dd>
     </dl>
@@ -276,7 +324,6 @@ button:disabled{opacity:.55;cursor:wait}
     <dl>
       <dt>📋 Copiar nombre-ID</dt><dd>Copia «Nombre del proceso-ID» para pegarlo entre los corchetes de <i>Publicar/modificar [ ]</i> en Confluence.</dd>
       <dt>📋 Nombre · 📋 ID</dt><dd>Copian solo el nombre del proceso o solo su ID.</dd>
-      <dt>↻ Otro cambio en este proceso (otro día)</dt><dd>Cuando vuelves a tocar el mismo papá otro día o por otra petición: crea un registro aparte con la fecha de hoy y el nombre e ID ya puestos. El registro anterior no se toca.</dd>
     </dl>
 
     <h3>Pestaña o bloque «Sin pestaña»</h3>
@@ -311,7 +358,7 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>Pegado paso a paso</dt><dd>Para Confluence: botón (o Enter) → <kbd>Ctrl</kbd>+<kbd>V</kbd> en Confluence → vuelves y repites. Alterna texto y capturas. Con el <b>modo rápido</b> marcado, al volver a la herramienta el siguiente paso se copia solo: solo vas a Confluence, <kbd>Ctrl</kbd>+<kbd>V</kbd> y vuelves.</dd>
       <dt>Copiar todo</dt><dd>Copia todo de una vez, pero Confluence descarta las capturas pegadas así y solo entra el texto. Para las capturas usa el paso a paso.</dd>
       <dt>Copiar solo texto</dt><dd>Todo el texto, sin capturas.</dd>
-      <dt>Borrar registro</dt><dd>Lo borra de este navegador. Lo guardado en Google no se borra.</dd>
+      <dt>Borrar registro</dt><dd>Solo en modo edición. Lo borra de este navegador; lo guardado en Google no se borra.</dd>
     </dl>
 
     <h3>Atajos y trucos</h3>
@@ -371,6 +418,8 @@ button:disabled{opacity:.55;cursor:wait}
   const buscarCont = eid => { for (const g of proc.pestanas) { const c = g.contenidos.find(x => x.eid === eid); if (c) return [g, c]; } return [null, null]; };
   const buscarG = gid => proc.pestanas.find(g => g.gid === gid);
   const contVacio = c => !c.titulo && !c.cid && !c.texto && !c.imgs.length;
+  const grupoVacio = g => !g.titulo && !g.cid && g.contenidos.every(contVacio);
+  const grupos_ = p => p.pestanas.filter(g => !grupoVacio(g));
   const procVacio = p => p.pestanas.every(g => !g.titulo && !g.cid && g.contenidos.every(contVacio));
   function grupoDirecto(crear) {
     let g = proc.pestanas.find(x => x.directo);
@@ -425,19 +474,90 @@ button:disabled{opacity:.55;cursor:wait}
   document.addEventListener('visibilitychange', () => { if (document.hidden && saveT) guardarYa(); });
   window.addEventListener('beforeunload', () => { if (saveT) guardarYa(); });
 
-  function nuevoProceso(nombre = '', pid = '') {
-    if (saveT) guardarYa();
+  let modo = 'lectura';
+  const enLectura = () => !proc || modo === 'lectura';
+  // borra el registro abierto si se quedó totalmente vacío (para no dejar basura)
+  async function descartarSiVacio(p) {
+    if (!p || p.nombre || p.pid || p.notas || !procVacio(p)) return;
+    todos = todos.filter(x => x !== p);
+    if (db) { try { await req(store('readwrite').delete(p.id)); } catch (e) {} }
+  }
+  function setModo(m) {
+    modo = m;
+    document.body.classList.toggle('lectura', m === 'lectura');
+    renderEstructura();
+    $('#editor').querySelectorAll('input, textarea').forEach(el => { el.readOnly = m === 'lectura'; });
+    renderBanner();
+  }
+  function renderBanner() {
+    const b = $('#banner');
+    if (modo === 'lectura') {
+      b.className = 'lectura';
+      b.innerHTML = `<span class="txt">👁 Modo consulta — este registro no se puede modificar por error.</span>
+        <button data-b="editar" class="primary">✏️ Editar</button>
+        <button data-b="nuevo-cambio" title="Crea un registro nuevo con la fecha de hoy y el mismo nombre e ID de proceso">↻ Nuevo cambio en este proceso (hoy)</button>
+        <button data-b="inicio">← Inicio</button>`;
+    } else {
+      b.className = 'edicion';
+      b.innerHTML = `<span class="txt">✏️ Editando — todo se guarda solo mientras escribes.</span>
+        <button data-b="terminar" class="primary" title="Vuelve a modo consulta${logueado() ? ' y guarda en Google' : ''}">✓ Terminar edición</button>
+        <button data-b="inicio">← Inicio</button>`;
+    }
+  }
+  function abrirRegistro(p, m) {
+    proc = p; lastEid = null; lastGid = null;
+    document.body.classList.remove('sin-registro');
+    document.querySelectorAll('[data-p]').forEach(el => { el.value = proc[el.dataset.p] || ''; });
+    autosize($('#pNotas'));
+    setModo(m); renderLista(); pintarEstado();
+    window.scrollTo(0, 0);
+  }
+  function autoSubir(p) {
+    if (p && logueado() && (p.pendienteNube || !p.nubeAt) && (p.nombre || p.pid || !procVacio(p))) subirRegistro(p);
+  }
+  async function irInicio() {
+    if (saveT) await guardarYa();
+    const p = proc, eraEdicion = modo === 'edicion';
+    proc = null; modo = 'lectura';
+    document.body.classList.add('sin-registro'); document.body.classList.remove('lectura');
+    await descartarSiVacio(p);
+    renderLista(); pintarEstado();
+    if (eraEdicion) autoSubir(p);
+  }
+  async function terminarEdicion() {
+    if (saveT) await guardarYa();
+    const p = proc;
+    if (!p.nombre && !p.pid && !p.notas && procVacio(p)) { await irInicio(); return; }
+    setModo('lectura'); renderLista();
+    autoSubir(p);
+  }
+  async function nuevoProceso(nombre = '', pid = '') {
+    if (saveT) await guardarYa();
+    if (proc) { const ant = proc; if (modo === 'edicion') autoSubir(ant); await descartarSiVacio(ant); }
     const g = nuevaPest(); g.contenidos.push(nuevoCont());
-    proc = { id: uid(), nombre, pid, fecha: hoy(), notas: '', pestanas: [g], creado: Date.now(), actualizado: Date.now() };
-    lastEid = null; lastGid = null;
-    todos.push(proc); guardarYa(); renderProc();
+    const p = { id: uid(), nombre, pid, fecha: hoy(), notas: '', pestanas: [g], creado: Date.now(), actualizado: Date.now() };
+    todos.push(p); proc = p; await guardarYa();
+    abrirRegistro(p, 'edicion');
     if (!document.body.classList.contains('bloqueado')) (nombre ? estEl.querySelector('[data-gf=titulo]') : $('#pNombre')).focus();
   }
-  function cargar(id) {
-    if (saveT) guardarYa();
+  async function cargar(id) {
+    if (proc && proc.id === id) return;
+    if (saveT) await guardarYa();
     const p = todos.find(x => x.id === id); if (!p) return;
-    proc = p; lastEid = null; lastGid = null; renderProc(); pintarEstado();
+    if (proc) { const ant = proc; if (modo === 'edicion') autoSubir(ant); await descartarSiVacio(ant); }
+    abrirRegistro(p, 'lectura');
   }
+  $('#banner').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-b]'); if (!b) return;
+    const a = b.dataset.b;
+    if (a === 'editar') { setModo('edicion'); $('#pNombre').focus(); }
+    if (a === 'terminar') terminarEdicion();
+    if (a === 'inicio') irInicio();
+    if (a === 'nuevo-cambio') { nuevoProceso(proc.nombre, proc.pid); toast('Nuevo cambio del mismo proceso, con fecha de hoy'); }
+  });
+  $('#irInicio').onclick = () => irInicio();
+  $('#btnInicioNuevo').onclick = () => nuevoProceso();
+  $('#btnInicioBuscar').onclick = () => { const b = $('#buscar'); b.focus(); b.classList.add('destacar'); setTimeout(() => b.classList.remove('destacar'), 1500); };
 
   /* ---------- pintado ---------- */
   const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -449,6 +569,12 @@ button:disabled{opacity:.55;cursor:wait}
     if (dif === 1) return 'Ayer';
     return `${DIAS[d.getDay()]} ${fmtFecha(iso).slice(0, dif < 300 && d.getFullYear() === h.getFullYear() ? 5 : 10)}`;
   }
+  function fechaLarga(iso) {
+    if (!iso) return 'Sin fecha';
+    const e = etiquetaDia(iso), d = new Date(iso + 'T12:00:00');
+    const dia = DIAS[d.getDay()]; const Dia = dia.charAt(0).toUpperCase() + dia.slice(1);
+    return (e === 'Hoy' || e === 'Ayer' ? e + ', ' + dia : Dia) + ' ' + fmtFecha(iso);
+  }
   function renderLista() {
     const q = $('#buscar').value.trim().toLowerCase();
     const ul = $('#lista'); ul.innerHTML = '';
@@ -456,7 +582,26 @@ button:disabled{opacity:.55;cursor:wait}
     const lista = [...todos]
       .filter(p => !q || [p.nombre, p.pid, ...p.pestanas.flatMap(g => [g.titulo, g.cid, ...g.contenidos.map(c => c.titulo + ' ' + c.cid)])].join(' ').toLowerCase().includes(q))
       .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || b.actualizado - a.actualizado);
-    if (!lista.length) { ul.innerHTML = `<li class="vacio">${q ? 'Nada coincide con la búsqueda.' : 'Sin registros.'}</li>`; return; }
+    if (!lista.length) { ul.innerHTML = `<li class="vacio">${q ? 'Nada coincide con la búsqueda.' : 'Todavía no hay registros.'}</li>`; return; }
+    const pendDe = p => !p.nubeAt || p.pendienteNube;
+    const ncDe = p => p.pestanas.reduce((n, x) => n + x.contenidos.filter(c => !contVacio(c)).length, 0);
+    if (q) {
+      // al buscar: agrupado por proceso, con cada fecha en la que se tocó
+      const grupos = new Map();
+      lista.forEach(p => { const k = (p.pid || '').trim().toLowerCase() || (p.nombre || '').trim().toLowerCase() || p.id; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(p); });
+      for (const regs of grupos.values()) {
+        const h = document.createElement('li'); h.className = 'grp-proc';
+        h.innerHTML = `${esc(regs[0].nombre || '(sin nombre)')}<small>${esc(regs[0].pid || 'sin ID')} · ${regs.length} fecha${regs.length > 1 ? 's' : ''}</small>`;
+        ul.appendChild(h);
+        regs.forEach(p => {
+          const li = document.createElement('li'); li.className = 'reg fecha' + (p === proc ? ' activo' : '');
+          li.title = `${p.nombre || '(sin nombre)'} — ${fmtFecha(p.fecha)}`;
+          li.innerHTML = `<span class="dot ${nube ? (pendDe(p) ? 'pend' : 'ok') : ''}"></span><span class="nm">${esc(fechaLarga(p.fecha))}</span><span class="cnt" title="contenidos">${ncDe(p)}</span>`;
+          li.onclick = () => cargar(p.id); ul.appendChild(li);
+        });
+      }
+      return;
+    }
     let grupoActual = null;
     lista.forEach(p => {
       const g = etiquetaDia(p.fecha);
@@ -470,10 +615,8 @@ button:disabled{opacity:.55;cursor:wait}
     });
   }
   function renderProc() {
-    try { localStorage.setItem('rc-ultimo', proc.id); } catch (e) {}
-    document.querySelectorAll('[data-p]').forEach(el => { el.value = proc[el.dataset.p] || ''; });
-    autosize($('#pNotas'));
-    renderEstructura(); renderLista();
+    if (!proc) { renderLista(); return; }
+    abrirRegistro(proc, modo);
   }
   function renderEstructura() {
     estEl.innerHTML = '';
@@ -483,7 +626,7 @@ button:disabled{opacity:.55;cursor:wait}
   }
   function grupoEl(g, n) {
     const d = document.createElement('section');
-    d.className = 'grupo' + (g.directo ? ' directo' : ''); d.dataset.gid = g.gid;
+    d.className = 'grupo' + (g.directo ? ' directo' : '') + (grupoVacio(g) ? ' g-vacio' : ''); d.dataset.gid = g.gid;
     d.innerHTML = g.directo
       ? `<div class="ghead"><span class="gtag">Sin pestaña</span><span class="gtxt">Contenidos que cuelgan directamente del proceso</span>
            <div class="gbtns"><button data-a="gcopy" title="Copiar estos contenidos con sus capturas">📋</button><button data-a="gdel" class="danger" title="Eliminar este bloque">✕</button></div></div>`
@@ -502,7 +645,7 @@ button:disabled{opacity:.55;cursor:wait}
   }
   function contEl(c, num) {
     const d = document.createElement('div');
-    d.className = 'entrada'; d.dataset.eid = c.eid;
+    d.className = 'entrada' + (contVacio(c) ? ' c-vacio' : ''); d.dataset.eid = c.eid;
     d.innerHTML = `<div class="ehead">
         <span class="num">${num}</span><span class="lbl">Contenido</span>
         <input data-f="titulo" placeholder="Título del contenido" value="${esc(c.titulo)}">
@@ -567,12 +710,12 @@ button:disabled{opacity:.55;cursor:wait}
   $('#btnCopiarNomId').onclick = () => copiarPlano([(proc.nombre || '').trim(), (proc.pid || '').trim()].filter(Boolean).join('-'), 'Primero pon el nombre y el ID del proceso');
   $('#btnCopiarNom').onclick = () => copiarPlano((proc.nombre || '').trim(), 'Primero pon el nombre del proceso');
   $('#btnCopiarId').onclick = () => copiarPlano((proc.pid || '').trim(), 'Primero pon el ID del proceso');
-  $('#btnMismo').onclick = () => {
+  if ($('#btnMismo')) $('#btnMismo').onclick = () => {
     if (!proc.nombre && !proc.pid) { toast('Primero pon el nombre o el ID del proceso', true); return; }
     nuevoProceso(proc.nombre, proc.pid); toast('Nuevo cambio del mismo proceso, con fecha de hoy');
   };
   document.addEventListener('keydown', ev => {
-    if (document.body.classList.contains('bloqueado') || document.querySelector('dialog[open]') || !ev.altKey || ev.ctrlKey) return;
+    if (document.body.classList.contains('bloqueado') || enLectura() || document.querySelector('dialog[open]') || !ev.altKey || ev.ctrlKey) return;
     const k = ev.key.toLowerCase();
     if (k === 'p') { ev.preventDefault(); addPestana(); }
     if (k === 'c') {
@@ -605,6 +748,7 @@ button:disabled{opacity:.55;cursor:wait}
     const b = ev.target.closest('[data-a]');
     if (!b) { const z = ev.target.closest('.capturas'); if (z) z.focus(); return; }
     const a = b.dataset.a;
+    if (enLectura() && !['gcopy', 'ctexto', 'cbloque', 'cimg', 'ver'].includes(a)) return;
     const gEl = b.closest('.grupo'), g = gEl && buscarG(gEl.dataset.gid), gi = proc.pestanas.indexOf(g);
     const cEl = b.closest('.entrada'), c = cEl && buscarCont(cEl.dataset.eid)[1], ci = c ? g.contenidos.indexOf(c) : -1;
     const fig = b.closest('figure'), k = fig ? c.imgs.findIndex(x => x.iid === fig.dataset.iid) : -1;
@@ -644,17 +788,18 @@ button:disabled{opacity:.55;cursor:wait}
   $('#dlgImg').addEventListener('click', () => $('#dlgImg').close());
 
   // arrastrar imágenes
-  estEl.addEventListener('dragover', ev => { const z = ev.target.closest('.capturas'); if (z) { ev.preventDefault(); z.classList.add('drag'); } });
+  estEl.addEventListener('dragover', ev => { const z = ev.target.closest('.capturas'); if (z && !enLectura()) { ev.preventDefault(); z.classList.add('drag'); } });
   estEl.addEventListener('dragleave', ev => { const z = ev.target.closest('.capturas'); if (z) z.classList.remove('drag'); });
   estEl.addEventListener('drop', async ev => {
     const z = ev.target.closest('.capturas'); if (!z) return; ev.preventDefault(); z.classList.remove('drag');
+    if (enLectura()) return;
     const [, c] = buscarCont(z.closest('.entrada').dataset.eid);
     for (const f of [...ev.dataTransfer.files].filter(f => f.type.startsWith('image/'))) await addImg(c, f);
   });
 
   // pegar (Ctrl+V): capturas al contenido activo; «Título⇥ID» se separa
   document.addEventListener('paste', async ev => {
-    if (document.body.classList.contains('bloqueado') || document.querySelector('dialog[open]')) return;
+    if (document.body.classList.contains('bloqueado') || enLectura() || document.querySelector('dialog[open]')) return;
     const cd = ev.clipboardData; if (!cd) return;
     const files = [...cd.items].filter(it => it.kind === 'file' && it.type.startsWith('image/')).map(it => it.getAsFile()).filter(Boolean);
     const t = ev.target;
@@ -765,14 +910,14 @@ button:disabled{opacity:.55;cursor:wait}
   }
 
   $('#btnTexto').onclick = async () => {
-    let html = cabHTML(proc); for (const g of proc.pestanas) html += await grupoHTML(g, false);
-    const txt = cabTXT(proc) + proc.pestanas.map(grupoTXT).join('');
+    let html = cabHTML(proc); for (const g of grupos_(proc)) html += await grupoHTML(g, false);
+    const txt = cabTXT(proc) + grupos_(proc).map(grupoTXT).join('');
     if (await copiarHTML(html, txt)) toast('Texto copiado (sin capturas)');
   };
   $('#btnTodo').onclick = async () => {
     $('#estado').textContent = 'Preparando…';
-    let html = cabHTML(proc); for (const g of proc.pestanas) html += await grupoHTML(g, true);
-    const txt = cabTXT(proc) + proc.pestanas.map(grupoTXT).join('');
+    let html = cabHTML(proc); for (const g of grupos_(proc)) html += await grupoHTML(g, true);
+    const txt = cabTXT(proc) + grupos_(proc).map(grupoTXT).join('');
     if (await copiarHTML(html, txt)) toast('Copiado todo. Si Confluence no pega las capturas, usa «Pegado paso a paso».');
     pintarEstado();
   };
@@ -782,7 +927,7 @@ button:disabled{opacity:.55;cursor:wait}
   function construirPasos() {
     const out = []; let html = cabHTML(proc), txt = cabTXT(proc), nombres = ['Proceso'];
     const flush = () => { if (html) out.push({ tipo: 'texto', label: 'Texto: ' + nombres.join(' · '), html, txt }); html = ''; txt = ''; nombres = []; };
-    for (const g of proc.pestanas) {
+    for (const g of grupos_(proc)) {
       if (!g.directo) { html += pestHTML(g); txt += pestTXT(g); nombres.push(`pestaña «${g.titulo || 'sin título'}»`); }
       for (const c of g.contenidos.filter(c => !contVacio(c))) {
         html += contHTML(c); txt += contTXT(c); nombres.push(`«${c.titulo || 'sin título'}»`);
@@ -860,8 +1005,7 @@ button:disabled{opacity:.55;cursor:wait}
     clearTimeout(saveT); saveT = null;
     if (db) { try { await req(store('readwrite').delete(proc.id)); } catch (e) {} }
     todos = todos.filter(p => p !== proc);
-    const sig = [...todos].sort((a, b) => b.actualizado - a.actualizado)[0];
-    if (sig) { proc = sig; renderProc(); } else nuevoProceso();
+    proc = null; modo = 'lectura'; await irInicio();
     toast('Registro borrado');
   };
   $('#btnExport').onclick = async () => {
@@ -1015,19 +1159,20 @@ button:disabled{opacity:.55;cursor:wait}
       r.pendienteNube = false; r.nubeAt = Date.now(); r.actualizado = Date.now();
       if (db) await req(store('readwrite').put(r));
       const i = todos.findIndex(p => p.id === id); if (i >= 0) todos[i] = r; else todos.push(r);
-      proc = r; lastEid = null; lastGid = null; renderProc(); pintarEstado();
+      abrirRegistro(r, 'lectura');
       $('#dlgNube').close(); toast(`Abierto «${r.nombre || 'sin nombre'}» desde Google`);
     } catch (e) { errorNube(e); }
   }
   let subiendo = false;
-  $('#btnSubir').onclick = async () => {
+  $('#btnSubir').onclick = async () => { if (saveT) await guardarYa(); subirRegistro(proc); };
+  async function subirRegistro(p) {
     const cfg = leerCfg();
     if (!cfg.url || !cfg.token) { mostrarLogin('Entra para poder guardar en Google.'); return; }
-    if (subiendo) return;
+    if (!p) return;
+    if (subiendo) { setTimeout(() => subirRegistro(p), 1500); return; }
     subiendo = true; const btn = $('#btnSubir'); btn.disabled = true;
     try {
-      if (saveT) await guardarYa();
-      const ver = editVer, p = proc;
+      const ver = editVer;
       const imgs = p.pestanas.flatMap(g => g.contenidos.flatMap(c => c.imgs.map((im, k) => ({ c, im, k })))).filter(x => !x.im.driveId);
       let n = 0;
       for (const x of imgs) {
@@ -1039,24 +1184,24 @@ button:disabled{opacity:.55;cursor:wait}
         if (db) await req(store('readwrite').put(p));
       }
       pintarEstado('Guardando en la hoja…');
-      const limpio = { ...p, pestanas: p.pestanas.map(g => ({ ...g, contenidos: g.contenidos.map(c => ({ ...c, imgs: c.imgs.map(im => ({ iid: im.iid, driveId: im.driveId, url: im.url })) })) })) };
+      const limpio = { ...p, pestanas: grupos_(p).map(g => ({ ...g, contenidos: g.contenidos.map(c => ({ ...c, imgs: c.imgs.map(im => ({ iid: im.iid, driveId: im.driveId, url: im.url })) })) })) };
       delete limpio.pendienteNube; delete limpio.nubeAt;
       await api('guardar', { registro: limpio });
       p.nubeAt = Date.now(); if (editVer === ver) p.pendienteNube = false;
       if (db) await req(store('readwrite').put(p));
-      pintarEstado(); renderLista(); toast('Guardado en Google Sheets ✓');
+      pintarEstado(); renderLista(); toast(`«${p.nombre || 'sin nombre'}» guardado en Google ✓`);
     } catch (e) { errorNube(e); }
     finally { subiendo = false; btn.disabled = false; }
-  };
+  }
 
   /* ---------- arranque ---------- */
   try { db = await openDB(); todos = await req(store('readonly').getAll()); }
   catch (e) { db = null; toast('Este navegador no deja guardar: exporta antes de cerrar', true); }
   for (const p of todos) if (!p.pestanas) { migrar(p); if (db) try { await req(store('readwrite').put(p)); } catch (e) {} }
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
-  let ultimo = null; try { ultimo = localStorage.getItem('rc-ultimo'); } catch (e) {}
-  proc = todos.find(p => p.id === ultimo) || [...todos].sort((a, b) => b.actualizado - a.actualizado)[0];
-  if (proc) { renderProc(); pintarEstado(); } else nuevoProceso();
+  // limpia registros totalmente vacíos que hayan quedado de otras veces
+  for (const p of [...todos]) await descartarSiVacio(p);
+  proc = null; renderLista(); pintarEstado();
   if (logueado()) mostrarApp(); else mostrarLogin();
 })();
 </script>
