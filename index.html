@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Registro de cambios</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FF7900'/%3E%3Crect x='15' y='12' width='34' height='42' rx='5' fill='%23fff'/%3E%3Crect x='24' y='8' width='16' height='9' rx='3' fill='%23fff' stroke='%23FF7900' stroke-width='3'/%3E%3Cpath d='M22 34l7 7 13-14' fill='none' stroke='%23FF7900' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#FF7900">
 <style>
 :root{--ac:#FF7900;--ac2:#e56d00;--tx:#222;--mut:#6b6b6b;--bd:#dedede;--bg:#f5f5f4;--card:#fff;--danger:#c0392b}
 *{box-sizing:border-box}
@@ -25,12 +27,24 @@ header h1{font-size:17px;margin:0;flex:1}
 header .actions{display:flex;gap:6px}
 .layout{display:grid;grid-template-columns:250px 1fr;gap:18px;padding:18px;max-width:1300px;margin:0 auto}
 aside{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 150px);overflow:auto}
-aside ul{list-style:none;margin:8px 0 0;padding:0}
-aside li{padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid transparent}
-aside li:hover{background:#fff;border-color:var(--bd)}
-aside li.activo{background:#fff;border-color:var(--ac)}
-aside li b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-aside li small{color:var(--mut);display:block;overflow-wrap:anywhere}
+aside ul{list-style:none;margin:6px 0 0;padding:0}
+aside li.grp{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;padding:12px 8px 4px;cursor:default;border:none;background:none}
+aside li.reg{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:6px;cursor:pointer;border:1px solid transparent;font-size:13px}
+aside li.reg:hover{background:#fff;border-color:var(--bd)}
+aside li.reg.activo{background:#fff;border-color:var(--ac);font-weight:600}
+aside li.reg .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+aside li.reg .dot{flex:0 0 7px;height:7px;border-radius:50%;background:transparent}
+aside li.reg .dot.pend{background:var(--ac)}
+aside li.reg .dot.ok{background:#cfcfcf}
+aside li.reg .cnt{flex:0 0 auto;font-size:11px;color:var(--mut);background:#ececec;border-radius:9px;padding:0 6px}
+aside .vacio{padding:8px}
+#dlgManual{width:min(760px,94vw)}
+#dlgManual .man{max-height:72vh;overflow:auto;padding-right:6px}
+#dlgManual h3{font-size:14px;margin:16px 0 6px;color:var(--ac2)}
+#dlgManual dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:0}
+#dlgManual dt{font-weight:600;white-space:nowrap}
+#dlgManual dd{margin:0;color:#444}
+#dlgManual p{margin:6px 0;color:#444}
 aside{overflow-x:hidden}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
 .row{display:flex;gap:10px;align-items:end}
@@ -148,7 +162,7 @@ button:disabled{opacity:.55;cursor:wait}
     <button id="btnExport" title="Descarga una copia de seguridad de todos los procesos">Exportar</button>
     <label class="btn" title="Carga una copia exportada">Importar<input type="file" id="fileImport" accept=".json,application/json" hidden></label>
   </div>
-  <div id="userBox"><span class="avatar" id="avatar">?</span><span id="userName"></span><button id="btnConfig" title="Configuración">⚙</button><button id="btnSalir" title="Cerrar sesión">Salir</button></div>
+  <div id="userBox"><span class="avatar" id="avatar">?</span><span id="userName"></span><button id="btnManual" title="Manual: qué hace cada botón">?</button><button id="btnConfig" title="Configuración">⚙</button><button id="btnSalir" title="Cerrar sesión">Salir</button></div>
 </header>
 
 <div class="layout">
@@ -176,7 +190,6 @@ button:disabled{opacity:.55;cursor:wait}
       <button id="btnAddDirecto" title="Contenido que cuelga directamente del proceso, sin pestaña">+ Contenido sin pestaña</button>
       <button id="btnLista">+ Varias desde una lista</button>
     </div>
-    <p class="atajos">Atajos: <kbd>Alt</kbd>+<kbd>P</kbd> nueva pestaña · <kbd>Alt</kbd>+<kbd>C</kbd> nuevo contenido en la pestaña actual · <kbd>Ctrl</kbd>+<kbd>V</kbd> con una captura en el portapapeles la añade al contenido marcado en naranja · Si pegas «Título⇥ID» en un título, se separa solo.</p>
   </main>
 </div>
 
@@ -227,6 +240,83 @@ button:disabled{opacity:.55;cursor:wait}
     <div id="cError" style="color:var(--danger);font-weight:600;min-height:18px"></div>
     <div class="dfoot"><span></span><button class="primary" type="submit">Guardar</button></div>
   </form>
+</dialog>
+
+<dialog id="dlgManual">
+  <div class="dhead"><h2>? Manual — qué hace cada botón</h2><button data-close title="Cerrar">✕</button></div>
+  <div class="man">
+    <h3>Cómo se trabaja</h3>
+    <p>1) Rellena el <b>proceso (papá)</b> con nombre e ID. 2) Añade sus <b>pestañas</b> (título e ID) o, si no tiene, <b>contenidos sin pestaña</b>. 3) En cada <b>contenido</b>: título, ID, qué has cambiado y la captura (clic en el recuadro de puntos y <kbd>Ctrl</kbd>+<kbd>V</kbd>). 4) Al acabar: <b>Pegado paso a paso</b> para Confluence y <b>☁ Guardar en Google</b>.</p>
+    <p>Todo se guarda solo en este navegador mientras escribes. En Google solo se guarda al pulsar <b>☁ Guardar en Google</b>.</p>
+
+    <h3>Arriba</h3>
+    <dl>
+      <dt>+ Nuevo proceso</dt><dd>Empieza un registro nuevo en blanco (otro papá).</dd>
+      <dt>☁ Guardados en Google</dt><dd>Lista de lo guardado en tu hoja. Clic en uno para abrirlo aquí con sus capturas, desde cualquier ordenador.</dd>
+      <dt>Exportar</dt><dd>Descarga una copia de seguridad de todos los registros (.json).</dd>
+      <dt>Importar</dt><dd>Carga esa copia (por ejemplo, en otro ordenador).</dd>
+      <dt>?</dt><dd>Este manual.</dd>
+      <dt>⚙</dt><dd>Configuración: la URL del script de Google (solo si haces una implementación nueva).</dd>
+      <dt>Salir</dt><dd>Cierra la sesión. Lo que hay en el navegador se queda.</dd>
+    </dl>
+
+    <h3>Lista de la izquierda</h3>
+    <dl>
+      <dt>Buscador</dt><dd>Busca por nombre o ID de proceso, pestaña o contenido.</dd>
+      <dt>Grupos</dt><dd>Los registros salen agrupados por fecha: Hoy, Ayer y los días anteriores.</dd>
+      <dt>● naranja</dt><dd>Ese registro tiene cambios sin guardar en Google. Gris: ya está guardado.</dd>
+      <dt>Número</dt><dd>Cuántos contenidos tiene. Pasa el ratón por encima para ver el ID y los detalles.</dd>
+    </dl>
+
+    <h3>Proceso (papá)</h3>
+    <dl>
+      <dt>↻ Nuevo registro de este mismo proceso</dt><dd>Crea un registro nuevo con el mismo nombre e ID ya puestos (para otro día).</dd>
+    </dl>
+
+    <h3>Pestaña o bloque «Sin pestaña»</h3>
+    <dl>
+      <dt>↑ ↓</dt><dd>Sube o baja la pestaña.</dd>
+      <dt>📋</dt><dd>Copia la pestaña con todos sus contenidos y capturas.</dd>
+      <dt>✕</dt><dd>Borra la pestaña con lo que tiene dentro.</dd>
+      <dt>+ Contenido en esta pestaña</dt><dd>Añade un contenido dentro.</dd>
+    </dl>
+
+    <h3>Contenido</h3>
+    <dl>
+      <dt>↑ ↓</dt><dd>Lo sube o baja dentro de su pestaña.</dd>
+      <dt>⧉</dt><dd>Duplica el contenido.</dd>
+      <dt>✕</dt><dd>Lo borra.</dd>
+      <dt>Recuadro de puntos</dt><dd>Clic y <kbd>Ctrl</kbd>+<kbd>V</kbd> para pegar la captura (o arrastra una imagen). Puedes poner varias.</dd>
+      <dt>Captura: 📋 Copiar</dt><dd>Copia esa captura sola. <b>← →</b> cambian su orden, <b>✕</b> la quita y clic en la imagen la ve en grande.</dd>
+      <dt>Copiar texto</dt><dd>Copia solo el texto de ese contenido.</dd>
+      <dt>Copiar contenido con capturas</dt><dd>Copia el texto y sus capturas.</dd>
+    </dl>
+
+    <h3>Debajo de todo</h3>
+    <dl>
+      <dt>+ Pestaña</dt><dd>Añade una pestaña.</dd>
+      <dt>+ Contenido sin pestaña</dt><dd>Para procesos sin pestañas: contenido que cuelga directamente del papá.</dd>
+      <dt>+ Varias desde una lista</dt><dd>Pegas varias filas «título ⇥ ID» copiadas de OpenText y crea una pestaña o un contenido por fila.</dd>
+    </dl>
+
+    <h3>Barra de abajo</h3>
+    <dl>
+      <dt>☁ Guardar en Google</dt><dd>Sube el registro a tu hoja y las capturas a tu Drive. Si lo repites, se actualiza sin duplicar.</dd>
+      <dt>Pegado paso a paso</dt><dd>Para Confluence: botón (o Enter) → <kbd>Ctrl</kbd>+<kbd>V</kbd> en Confluence → vuelves y repites. Alterna texto y capturas.</dd>
+      <dt>Copiar todo</dt><dd>Texto y capturas de golpe (solo si Confluence acepta las imágenes así).</dd>
+      <dt>Copiar solo texto</dt><dd>Todo el texto, sin capturas.</dd>
+      <dt>Borrar registro</dt><dd>Lo borra de este navegador. Lo guardado en Google no se borra.</dd>
+    </dl>
+
+    <h3>Atajos y trucos</h3>
+    <dl>
+      <dt><kbd>Alt</kbd>+<kbd>P</kbd></dt><dd>Nueva pestaña.</dd>
+      <dt><kbd>Alt</kbd>+<kbd>C</kbd></dt><dd>Nuevo contenido en la pestaña actual.</dd>
+      <dt><kbd>Ctrl</kbd>+<kbd>V</kbd></dt><dd>Con una captura copiada, la añade al contenido con borde naranja (haz clic antes en el contenido correcto).</dd>
+      <dt>Título ⇥ ID</dt><dd>Si pegas en un título «título + ID» copiado de una tabla, se separa solo.</dd>
+      <dt>Viñetas</dt><dd>En «qué has modificado», las líneas que empiezan por «-» salen como viñetas en Confluence.</dd>
+    </dl>
+  </div>
 </dialog>
 
 <dialog id="dlgImg"><img alt="Captura"></dialog>
@@ -344,17 +434,34 @@ button:disabled{opacity:.55;cursor:wait}
   }
 
   /* ---------- pintado ---------- */
+  const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  function etiquetaDia(iso) {
+    if (!iso) return 'Sin fecha';
+    const d = new Date(iso + 'T12:00:00'), h = new Date(hoy() + 'T12:00:00');
+    const dif = Math.round((h - d) / 864e5);
+    if (dif === 0) return 'Hoy';
+    if (dif === 1) return 'Ayer';
+    return `${DIAS[d.getDay()]} ${fmtFecha(iso).slice(0, dif < 300 && d.getFullYear() === h.getFullYear() ? 5 : 10)}`;
+  }
   function renderLista() {
     const q = $('#buscar').value.trim().toLowerCase();
     const ul = $('#lista'); ul.innerHTML = '';
-    [...todos].sort((a, b) => b.actualizado - a.actualizado)
+    const nube = !!leerCfg().url;
+    const lista = [...todos]
       .filter(p => !q || [p.nombre, p.pid, ...p.pestanas.flatMap(g => [g.titulo, g.cid, ...g.contenidos.map(c => c.titulo + ' ' + c.cid)])].join(' ').toLowerCase().includes(q))
-      .forEach(p => {
-        const li = document.createElement('li'); if (p === proc) li.className = 'activo';
-        const np = p.pestanas.filter(g => !g.directo).length, nc = p.pestanas.reduce((n, g) => n + g.contenidos.length, 0);
-        li.innerHTML = `<b>${esc(p.nombre || '(sin nombre)')}</b><small>${esc(p.pid || 'sin ID')} · ${fmtFecha(p.fecha)} · ${np} pest. · ${nc} cont.</small>`;
-        li.onclick = () => cargar(p.id); ul.appendChild(li);
-      });
+      .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || b.actualizado - a.actualizado);
+    if (!lista.length) { ul.innerHTML = `<li class="vacio">${q ? 'Nada coincide con la búsqueda.' : 'Sin registros.'}</li>`; return; }
+    let grupoActual = null;
+    lista.forEach(p => {
+      const g = etiquetaDia(p.fecha);
+      if (g !== grupoActual) { grupoActual = g; const h = document.createElement('li'); h.className = 'grp'; h.textContent = g; ul.appendChild(h); }
+      const li = document.createElement('li'); li.className = 'reg' + (p === proc ? ' activo' : '');
+      const np = p.pestanas.filter(x => !x.directo).length, nc = p.pestanas.reduce((n, x) => n + x.contenidos.filter(c => !contVacio(c)).length, 0);
+      const pend = !p.nubeAt || p.pendienteNube;
+      li.title = `${p.nombre || '(sin nombre)'}\nID: ${p.pid || '—'}\nFecha: ${fmtFecha(p.fecha)}\n${np} pestaña(s) · ${nc} contenido(s)` + (nube ? `\n${pend ? 'Con cambios sin guardar en Google' : 'Guardado en Google'}` : '');
+      li.innerHTML = `<span class="dot ${nube ? (pend ? 'pend' : 'ok') : ''}"></span><span class="nm">${esc(p.nombre || '(sin nombre)')}</span><span class="cnt" title="contenidos">${nc}</span>`;
+      li.onclick = () => cargar(p.id); ul.appendChild(li);
+    });
   }
   function renderProc() {
     try { localStorage.setItem('rc-ultimo', proc.id); } catch (e) {}
@@ -820,6 +927,7 @@ button:disabled{opacity:.55;cursor:wait}
     pintarEstado();
   }
   $('#btnNube').onclick = () => abrirNube();
+  $('#btnManual').onclick = () => $('#dlgManual').showModal();
   $('#btnConfig').onclick = () => { $('#cUrl').value = leerCfg().url || ''; $('#cError').textContent = ''; $('#dlgConfig').showModal(); $('#cUrl').focus(); };
   $('#formConfig').addEventListener('submit', ev => {
     ev.preventDefault();
@@ -892,7 +1000,7 @@ button:disabled{opacity:.55;cursor:wait}
       await api('guardar', { registro: limpio });
       p.nubeAt = Date.now(); if (editVer === ver) p.pendienteNube = false;
       if (db) await req(store('readwrite').put(p));
-      pintarEstado(); toast('Guardado en Google Sheets ✓');
+      pintarEstado(); renderLista(); toast('Guardado en Google Sheets ✓');
     } catch (e) { errorNube(e); }
     finally { subiendo = false; btn.disabled = false; }
   };
