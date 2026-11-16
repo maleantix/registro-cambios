@@ -53,7 +53,7 @@ aside{overflow-x:hidden}
 .proc{border-top:4px solid var(--ac)}
 .proc .row{margin-bottom:10px}
 .proc .tag{display:inline-block;background:var(--ac);color:#fff;font-size:11px;font-weight:700;border-radius:4px;padding:1px 7px;margin-bottom:8px;letter-spacing:.3px}
-.procfoot{display:flex;justify-content:flex-end;margin-top:8px}
+.procfoot{display:flex;align-items:center;gap:8px;margin-top:8px}
 /* pestañas */
 .grupo{background:#fff;border:1px solid var(--bd);border-left:5px solid var(--ac);border-radius:10px;margin-bottom:14px}
 .grupo.directo{border-left-color:#8c8c8c;background:#fbfbfb}
@@ -104,6 +104,9 @@ dialog::backdrop{background:#0006}
 .big{width:100%;padding:14px;font-size:16px;white-space:normal}
 #pasoPrev{margin:10px 0;text-align:center}
 #pasoPrev img{max-width:100%;max-height:180px;border:1px solid var(--bd);border-radius:6px}
+label.auto{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:400;color:var(--tx);background:#fff6ee;border:1px solid #ffd9b8;border-radius:8px;padding:9px 10px;margin:0 0 12px;cursor:pointer}
+label.auto input{width:auto;margin-top:2px}
+#pasoMsg.auto{color:var(--ac2)}
 #pasoMsg{min-height:20px;text-align:center;color:#2e7d32;font-weight:600;margin-top:8px}
 #pasosLista{max-height:34vh;overflow:auto;padding-left:22px;margin:8px 0}
 #pasosLista li{padding:4px 6px;border-radius:5px;cursor:pointer;color:var(--mut)}
@@ -180,7 +183,7 @@ button:disabled{opacity:.55;cursor:wait}
         <label class="small">Fecha<input id="pFecha" data-p="fecha" type="date"></label>
       </div>
       <label>Notas generales (opcional)<textarea id="pNotas" data-p="notas" rows="2" placeholder="Motivo del cambio, petición, etc."></textarea></label>
-      <div class="procfoot"><button id="btnMismo" class="link" title="Crea un registro nuevo con el mismo nombre e ID de proceso">↻ Nuevo registro de este mismo proceso</button></div>
+      <div class="procfoot"><button id="btnCopiarNomId" title="Copia «Nombre-ID» para ponerlo entre los corchetes de Publicar/modificar [ ] en Confluence">📋 Copiar nombre-ID</button><span style="flex:1"></span><button id="btnMismo" class="link" title="Crea un registro aparte, con la fecha de hoy y el mismo nombre e ID de proceso">↻ Otro cambio en este proceso (otro día)</button></div>
     </section>
 
     <div id="estructura"></div>
@@ -207,6 +210,7 @@ button:disabled{opacity:.55;cursor:wait}
 <dialog id="dlgPaso">
   <div class="dhead"><h2>Pegado paso a paso</h2><button data-close title="Cerrar">✕</button></div>
   <p class="ayuda">Pulsa el botón (o <b>Enter</b>) → ve a Confluence → <b>Ctrl+V</b> → vuelve aquí y repite.</p>
+  <label class="auto"><input type="checkbox" id="chkAuto"> <span><b>Modo rápido:</b> al volver a esta ventana se copia solo el siguiente paso. Solo tienes que ir a Confluence, <b>Ctrl+V</b> y volver.</span></label>
   <button id="btnSig" class="primary big"></button>
   <div id="pasoMsg"></div>
   <div id="pasoPrev"></div>
@@ -270,7 +274,8 @@ button:disabled{opacity:.55;cursor:wait}
 
     <h3>Proceso (papá)</h3>
     <dl>
-      <dt>↻ Nuevo registro de este mismo proceso</dt><dd>Crea un registro nuevo con el mismo nombre e ID ya puestos (para otro día).</dd>
+      <dt>📋 Copiar nombre-ID</dt><dd>Copia «Nombre del proceso-ID» para pegarlo entre los corchetes de <i>Publicar/modificar [ ]</i> en Confluence.</dd>
+      <dt>↻ Otro cambio en este proceso (otro día)</dt><dd>Cuando vuelves a tocar el mismo papá otro día o por otra petición: crea un registro aparte con la fecha de hoy y el nombre e ID ya puestos. El registro anterior no se toca.</dd>
     </dl>
 
     <h3>Pestaña o bloque «Sin pestaña»</h3>
@@ -302,8 +307,8 @@ button:disabled{opacity:.55;cursor:wait}
     <h3>Barra de abajo</h3>
     <dl>
       <dt>☁ Guardar en Google</dt><dd>Sube el registro a tu hoja y las capturas a tu Drive. Si lo repites, se actualiza sin duplicar.</dd>
-      <dt>Pegado paso a paso</dt><dd>Para Confluence: botón (o Enter) → <kbd>Ctrl</kbd>+<kbd>V</kbd> en Confluence → vuelves y repites. Alterna texto y capturas.</dd>
-      <dt>Copiar todo</dt><dd>Texto y capturas de golpe (solo si Confluence acepta las imágenes así).</dd>
+      <dt>Pegado paso a paso</dt><dd>Para Confluence: botón (o Enter) → <kbd>Ctrl</kbd>+<kbd>V</kbd> en Confluence → vuelves y repites. Alterna texto y capturas. Con el <b>modo rápido</b> marcado, al volver a la herramienta el siguiente paso se copia solo: solo vas a Confluence, <kbd>Ctrl</kbd>+<kbd>V</kbd> y vuelves.</dd>
+      <dt>Copiar todo</dt><dd>Copia todo de una vez, pero Confluence descarta las capturas pegadas así y solo entra el texto. Para las capturas usa el paso a paso.</dd>
       <dt>Copiar solo texto</dt><dd>Todo el texto, sin capturas.</dd>
       <dt>Borrar registro</dt><dd>Lo borra de este navegador. Lo guardado en Google no se borra.</dd>
     </dl>
@@ -552,9 +557,17 @@ button:disabled{opacity:.55;cursor:wait}
   $('#btnAddPest').onclick = addPestana;
   $('#btnAddDirecto').onclick = () => addCont(grupoDirecto(true));
   $('#btnNuevo').onclick = () => nuevoProceso();
+  $('#btnCopiarNomId').onclick = async () => {
+    const nom = (proc.nombre || '').trim(), id = (proc.pid || '').trim();
+    if (!nom && !id) { toast('Primero pon el nombre y el ID del proceso', true); return; }
+    const t = [nom, id].filter(Boolean).join('-');
+    let ok = false;
+    try { await navigator.clipboard.writeText(t); ok = true; } catch (e) { ok = await copiarHTML(esc(t), t); }
+    if (ok) toast('Copiado: ' + t);
+  };
   $('#btnMismo').onclick = () => {
     if (!proc.nombre && !proc.pid) { toast('Primero pon el nombre o el ID del proceso', true); return; }
-    nuevoProceso(proc.nombre, proc.pid); toast('Nuevo registro del mismo proceso');
+    nuevoProceso(proc.nombre, proc.pid); toast('Nuevo cambio del mismo proceso, con fecha de hoy');
   };
   document.addEventListener('keydown', ev => {
     if (document.body.classList.contains('bloqueado') || document.querySelector('dialog[open]') || !ev.altKey || ev.ctrlKey) return;
@@ -788,27 +801,56 @@ button:disabled{opacity:.55;cursor:wait}
     pasos.forEach((p, k) => {
       const li = document.createElement('li'); li.textContent = p.label;
       li.className = (p.hecho ? 'hecho ' : '') + (k === idx ? 'actual' : '');
-      li.onclick = () => { idx = k; $('#pasoMsg').textContent = ''; renderPasos(); b.focus(); };
+      li.onclick = () => { idx = k; esperandoVuelta = false; $('#pasoMsg').textContent = ''; renderPasos(); b.focus(); };
       ol.appendChild(li);
     });
     ol.querySelector('.actual')?.scrollIntoView({ block: 'nearest' });
   }
   $('#btnPaso').onclick = () => {
     if (saveT) guardarYa();
-    pasos = construirPasos(); idx = 0; $('#pasoMsg').textContent = '';
+    pasos = construirPasos(); idx = 0; esperandoVuelta = false; $('#pasoMsg').textContent = ''; $('#pasoMsg').className = '';
     renderPasos(); $('#dlgPaso').showModal(); $('#btnSig').focus();
   };
-  $('#btnSig').onclick = async () => {
-    if (idx >= pasos.length) { $('#dlgPaso').close(); return; }
-    const p = pasos[idx];
-    const ok = p.tipo === 'imagen' ? await copiarImagen(p.blob) : await copiarHTML(p.html, p.txt);
-    if (!ok) return;
-    p.hecho = true;
-    $('#pasoMsg').textContent = `Paso ${idx + 1} copiado → pégalo en Confluence (Ctrl+V) y vuelve aquí`;
+  let esperandoVuelta = false, copiando = false, ultimoAuto = 0;
+  try { $('#chkAuto').checked = localStorage.getItem('rc-auto') !== '0'; } catch (e) { $('#chkAuto').checked = true; }
+  $('#chkAuto').onchange = () => { try { localStorage.setItem('rc-auto', $('#chkAuto').checked ? '1' : '0'); } catch (e) {} $('#btnSig').focus(); };
+  async function copiarPaso(auto) {
+    if (copiando) return;
+    if (idx >= pasos.length) { if (!auto) $('#dlgPaso').close(); return; }
+    copiando = true;
+    const p = pasos[idx], msg = $('#pasoMsg');
+    let ok = false;
+    try {
+      if (p.tipo === 'imagen') {
+        try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': p.blob })]); ok = true; }
+        catch (e) { if (!auto) toast('No se pudo copiar la imagen: ' + (e.message || e), true); }
+      } else {
+        if (auto) { try { await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([p.html], { type: 'text/html' }), 'text/plain': new Blob([p.txt], { type: 'text/plain' }) })]); ok = true; } catch (e) {} }
+        else ok = await copiarHTML(p.html, p.txt);
+      }
+    } finally { copiando = false; }
+    if (!ok) {
+      if (auto) { msg.className = 'auto'; msg.textContent = `Pulsa Enter para copiar el paso ${idx + 1}`; }
+      esperandoVuelta = false; $('#btnSig').focus(); return;
+    }
+    p.hecho = true; esperandoVuelta = true;
+    msg.className = auto ? 'auto' : '';
+    msg.textContent = (auto ? '⚡ ' : '') + `Paso ${idx + 1} de ${pasos.length} copiado → Ctrl+V en Confluence` + (idx + 1 < pasos.length ? ' y vuelve aquí' : ' (es el último)');
     idx++; renderPasos(); $('#btnSig').focus();
-  };
-  $('#btnAnt').onclick = () => { if (idx > 0) { idx--; $('#pasoMsg').textContent = ''; renderPasos(); $('#btnSig').focus(); } };
-  $('#btnReini').onclick = () => { pasos.forEach(p => p.hecho = false); idx = 0; $('#pasoMsg').textContent = ''; renderPasos(); $('#btnSig').focus(); };
+    if (idx >= pasos.length) esperandoVuelta = false;
+  }
+  $('#btnSig').onclick = () => copiarPaso(false);
+  function alVolver() {
+    if (!$('#dlgPaso').open || !$('#chkAuto').checked || !esperandoVuelta || idx >= pasos.length) return;
+    if (document.hidden || !document.hasFocus()) return;
+    const ahora = Date.now(); if (ahora - ultimoAuto < 700) return; ultimoAuto = ahora;
+    setTimeout(() => copiarPaso(true), 120);
+  }
+  window.addEventListener('focus', alVolver);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(alVolver, 50); });
+  $('#dlgPaso').addEventListener('close', () => { esperandoVuelta = false; });
+  $('#btnAnt').onclick = () => { if (idx > 0) { idx--; esperandoVuelta = false; $('#pasoMsg').textContent = ''; renderPasos(); $('#btnSig').focus(); } };
+  $('#btnReini').onclick = () => { pasos.forEach(p => p.hecho = false); idx = 0; esperandoVuelta = false; $('#pasoMsg').textContent = ''; renderPasos(); $('#btnSig').focus(); };
 
   /* ---------- borrar / exportar / importar ---------- */
   $('#btnBorrar').onclick = async () => {
