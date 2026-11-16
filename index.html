@@ -145,6 +145,24 @@ body.lectura .entrada.activa{border-color:var(--bd);box-shadow:none}
 aside li.grp-proc{padding:12px 8px 3px;font-weight:700;font-size:13px;cursor:default;border:none;background:none}
 aside li.grp-proc small{display:block;font-weight:400;color:var(--mut);font-size:11px;overflow-wrap:anywhere}
 aside li.reg.fecha{padding-left:16px}
+/* historial */
+#dlgHist{width:min(820px,95vw)}
+#histCuerpo{max-height:72vh;overflow:auto;padding-right:6px}
+.hdia{border:1px solid var(--bd);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.hdia-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff6ee;border-bottom:1px solid #ffe0c7;padding:8px 12px}
+.hdia-head b{flex:1;font-size:14px}
+.hdia-head button{font-size:12px;padding:4px 9px}
+.hev{padding:9px 12px;border-top:1px solid #f0f0f0;font-size:13px}
+.hev:first-of-type{border-top:none}
+.hev .hora{color:var(--mut);font-variant-numeric:tabular-nums;margin-right:6px}
+.hev .chip{display:inline-block;font-size:11px;border-radius:9px;padding:0 7px;margin-left:4px;background:#ececec;color:#444}
+.hev .chip.nuevo{background:#e3f4e5;color:#2e7d32}
+.hev .chip.del{background:#fde8e6;color:var(--danger)}
+.hev .ruta{color:var(--mut);font-size:12px}
+.hev .htexto{white-space:pre-wrap;background:#fafafa;border-left:3px solid #ddd;padding:6px 9px;margin-top:6px;color:#333}
+.hev .hthumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.hev .hthumbs img{height:64px;border:1px solid var(--bd);border-radius:4px;cursor:zoom-in}
+.efoot .fechas{flex:1;color:var(--mut);font-size:11px;align-self:center}
 #pantallaLogin{display:none;position:fixed;inset:0;background:var(--bg);z-index:100;place-items:center;padding:20px}
 body.bloqueado #pantallaLogin{display:grid}
 body.bloqueado header,body.bloqueado .layout,body.bloqueado .bar{display:none}
@@ -297,6 +315,7 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>👁 Modo consulta</dt><dd>Al abrir un registro de la lista se ve en consulta: no se puede cambiar nada por error, pero sí copiar y hacer el pegado paso a paso.</dd>
       <dt>✏️ Editar</dt><dd>Desbloquea el registro para cambiarlo.</dd>
       <dt>✓ Terminar edición</dt><dd>Lo vuelve a bloquear y lo guarda en Google automáticamente. También se guarda en Google al pulsar <b>← Inicio</b> o abrir otro registro mientras editas.</dd>
+      <dt>📅 Historial</dt><dd>Qué cambiaste cada día en ese registro: contenidos nuevos o modificados, cómo quedó el texto ese día y las capturas pegadas ese día. En cada día tienes <b>Pegado paso a paso de este día</b> (solo pasa a Confluence lo de ese día) y <b>Copiar texto de este día</b>. Si sigues con la misma petición otro día, abre el registro y pulsa Editar: el historial lo separa por días.</dd>
       <dt>↻ Nuevo cambio en este proceso (hoy)</dt><dd>Para cuando vuelves a tocar un proceso que ya hiciste otro día: crea un registro nuevo con la fecha de hoy y el mismo nombre e ID. El registro anterior queda como estaba.</dd>
     </dl>
 
@@ -315,7 +334,8 @@ button:disabled{opacity:.55;cursor:wait}
     <dl>
       <dt>Buscador</dt><dd>Busca por nombre o ID de proceso, pestaña o contenido.</dd>
       <dt>Grupos</dt><dd>Los registros salen agrupados por fecha: Hoy, Ayer y los días anteriores.</dd>
-      <dt>Al buscar</dt><dd>Los resultados salen agrupados por proceso, con debajo cada fecha en la que lo tocaste. Clic en una fecha para ver los cambios de ese día.</dd>
+      <dt>Al buscar</dt><dd>Los resultados salen agrupados por proceso, con cada registro y el último día que lo tocaste (y cuántos días lleva). Abre uno y pulsa <b>📅 Historial</b> para ver los cambios de cada día.</dd>
+      <dt>Fecha en la lista</dt><dd>Cada registro aparece en el último día que lo tocaste.</dd>
       <dt>● naranja</dt><dd>Ese registro tiene cambios sin guardar en Google. Gris: ya está guardado.</dd>
       <dt>Número</dt><dd>Cuántos contenidos tiene. Pasa el ratón por encima para ver el ID y los detalles.</dd>
     </dl>
@@ -370,6 +390,12 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>Viñetas</dt><dd>En «qué has modificado», las líneas que empiezan por «-» salen como viñetas en Confluence.</dd>
     </dl>
   </div>
+</dialog>
+
+<dialog id="dlgHist">
+  <div class="dhead"><h2>📅 Historial de cambios</h2><button data-close title="Cerrar">✕</button></div>
+  <p class="ayuda" id="histSub"></p>
+  <div id="histCuerpo"></div>
 </dialog>
 
 <dialog id="dlgImg"><img alt="Captura"></dialog>
@@ -454,6 +480,7 @@ button:disabled{opacity:.55;cursor:wait}
     clearTimeout(saveT); saveT = null;
     if (!proc) return;
     proc.actualizado = Date.now();
+    if (modo === 'edicion') { try { registrarCambios(); } catch (e) { console.error(e); } }
     if (db) { try { await req(store('readwrite').put(proc)); } catch (e) { toast('No se pudo guardar: ' + e.message, true); return; } }
     if (!todos.includes(proc)) todos.push(proc);
     pintarEstado();
@@ -473,6 +500,130 @@ button:disabled{opacity:.55;cursor:wait}
   function guardar() { if (proc) { proc.pendienteNube = true; editVer++; } $('#estado').textContent = 'Guardando…'; clearTimeout(saveT); saveT = setTimeout(guardarYa, 400); }
   document.addEventListener('visibilitychange', () => { if (document.hidden && saveT) guardarYa(); });
   window.addEventListener('beforeunload', () => { if (saveT) guardarYa(); });
+
+  /* ---------- historial: qué se cambió cada día ---------- */
+  let snap = null;
+  const horaAhora = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  function foto(p) {
+    const f = { proc: { nombre: p.nombre || '', pid: p.pid || '', notas: p.notas || '' }, g: new Map(), c: new Map() };
+    p.pestanas.forEach(g => {
+      f.g.set(g.gid, { titulo: g.titulo || '', cid: g.cid || '', directo: !!g.directo });
+      g.contenidos.forEach(c => f.c.set(c.eid, { titulo: c.titulo || '', cid: c.cid || '', texto: c.texto || '', imgs: c.imgs.map(i => i.iid), gid: g.gid, vacio: contVacio(c) }));
+    });
+    return f;
+  }
+  function evento(tipo, clave, base) {
+    const dia = hoy(), h = proc.historial || (proc.historial = []);
+    let e = h.find(x => x.dia === dia && x.tipo === tipo && x.clave === clave);
+    if (!e) { e = { dia, tipo, clave, campos: [], ...base }; h.push(e); }
+    e.hora = horaAhora();
+    return e;
+  }
+  const marcar = (e, campo) => { if (!e.campos.includes(campo)) e.campos.push(campo); };
+  function registrarCambios() {
+    if (!snap) { snap = foto(proc); return; }
+    const ahora = foto(proc), dia = hoy();
+    const tituloG = gid => { const g = buscarG(gid); return g ? (g.directo ? '' : (g.titulo || 'sin título')) : ''; };
+    // proceso
+    ['nombre', 'pid', 'notas'].forEach(k => { if (snap.proc[k] !== ahora.proc[k]) marcar(evento('proc', 'proc', {}), k); });
+    // pestañas
+    ahora.g.forEach((v, gid) => {
+      if (v.directo) return;
+      const a = snap.g.get(gid);
+      if ((!a || (!a.titulo && !a.cid)) && (v.titulo || v.cid)) { const e = evento('pest', gid, { nuevo: true }); e.titulo = v.titulo; e.cid = v.cid; }
+      else if (a && (a.titulo !== v.titulo || a.cid !== v.cid)) { const e = evento('pest', gid, {}); e.titulo = v.titulo; e.cid = v.cid; marcar(e, a.titulo !== v.titulo ? 'titulo' : 'id'); }
+    });
+    snap.g.forEach((a, gid) => { if (!ahora.g.has(gid) && !a.directo && (a.titulo || a.cid)) { const e = evento('pest-del', gid, {}); e.titulo = a.titulo; e.cid = a.cid; } });
+    // contenidos
+    ahora.c.forEach((v, eid) => {
+      const a = snap.c.get(eid), c = buscarCont(eid)[1];
+      if (v.vacio) return;
+      let e;
+      if (!a || a.vacio) { e = evento('cont', eid, { nuevo: true }); if (!c.creado) c.creado = dia; }
+      else {
+        const cambios = [];
+        if (a.titulo !== v.titulo) cambios.push('titulo');
+        if (a.cid !== v.cid) cambios.push('id');
+        if (a.texto !== v.texto) cambios.push('texto');
+        const mas = v.imgs.filter(i => !a.imgs.includes(i)), menos = a.imgs.filter(i => !v.imgs.includes(i));
+        if (!cambios.length && !mas.length && !menos.length) return;
+        e = evento('cont', eid, {});
+        cambios.forEach(k => marcar(e, k));
+      }
+      const antes = a ? a.imgs : [];
+      const mas = v.imgs.filter(i => !antes.includes(i)), menos = antes.filter(i => !v.imgs.includes(i));
+      e.imgsMas = [...new Set([...(e.imgsMas || []), ...mas])].filter(i => v.imgs.includes(i));
+      if (menos.length) e.imgsMenos = (e.imgsMenos || 0) + menos.filter(i => !(e.imgsMas || []).includes(i)).length;
+      e.titulo = v.titulo; e.cid = v.cid; e.texto = v.texto; e.pest = tituloG(v.gid);
+      if (!c.creado) c.creado = proc.fecha || dia;
+      c.mod = dia;
+    });
+    snap.c.forEach((a, eid) => { if (!ahora.c.has(eid) && !a.vacio) { const e = evento('cont-del', eid, {}); e.titulo = a.titulo; e.cid = a.cid; } });
+    snap = ahora;
+  }
+  const diasDe = p => {
+    const d = new Set((p.historial || []).map(e => e.dia));
+    if (!d.size && p.fecha) d.add(p.fecha);
+    return [...d].sort().reverse();
+  };
+  const ultimoDia = p => diasDe(p)[0] || p.fecha || '';
+  function imgDe(iid) { for (const g of proc.pestanas) for (const c of g.contenidos) { const im = c.imgs.find(x => x.iid === iid); if (im) return im; } return null; }
+  const NOMBRES = { titulo: 'título', id: 'ID', texto: 'texto', nombre: 'nombre', pid: 'ID', notas: 'notas' };
+  function abrirHistorial() {
+    if (saveT) guardarYa();
+    const dias = diasDe(proc), cuerpo = $('#histCuerpo');
+    $('#histSub').textContent = `${proc.nombre || '(sin nombre)'} · ${dias.length} día${dias.length !== 1 ? 's' : ''} con cambios`;
+    cuerpo.innerHTML = '';
+    if (!(proc.historial || []).length) cuerpo.innerHTML = '<p class="ayuda">Este registro es de antes de que existiera el historial: a partir de ahora se apuntará lo que cambies cada día.</p>';
+    dias.forEach(dia => {
+      const evs = (proc.historial || []).filter(e => e.dia === dia).sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
+      if (!evs.length) return;
+      const box = document.createElement('section'); box.className = 'hdia';
+      const nCont = evs.filter(e => e.tipo === 'cont').length;
+      box.innerHTML = `<div class="hdia-head"><b>${esc(fechaLarga(dia))}</b>${nCont ? `<button data-h="paso" data-dia="${dia}">Pegado paso a paso de este día</button><button data-h="texto" data-dia="${dia}">📋 Copiar texto de este día</button>` : ''}</div>`;
+      evs.forEach(e => {
+        const d = document.createElement('div'); d.className = 'hev';
+        let h = `<span class="hora">${esc(e.hora || '')}</span>`;
+        if (e.tipo === 'proc') h += e.nuevo ? `Registro creado<span class="chip nuevo">nuevo</span>` : `Datos del proceso` + e.campos.map(k => `<span class="chip">${NOMBRES[k] || k}</span>`).join('');
+        if (e.tipo === 'pest') h += `Pestaña «${esc(e.titulo || 'sin título')}»${e.cid ? ` · ID ${esc(e.cid)}` : ''}${e.nuevo ? '<span class="chip nuevo">nueva</span>' : e.campos.map(k => `<span class="chip">${NOMBRES[k] || k}</span>`).join('')}`;
+        if (e.tipo === 'pest-del') h += `Pestaña «${esc(e.titulo || 'sin título')}»<span class="chip del">eliminada</span>`;
+        if (e.tipo === 'cont-del') h += `Contenido «${esc(e.titulo || 'sin título')}»<span class="chip del">eliminado</span>`;
+        if (e.tipo === 'cont') {
+          h += `${e.pest ? `<span class="ruta">${esc(e.pest)} › </span>` : ''}<b>${esc(e.titulo || 'sin título')}</b>${e.cid ? ` <span class="ruta">· ID ${esc(e.cid)}</span>` : ''}`;
+          h += e.nuevo ? '<span class="chip nuevo">nuevo</span>' : e.campos.map(k => `<span class="chip">${NOMBRES[k] || k}</span>`).join('');
+          if ((e.imgsMas || []).length) h += `<span class="chip">+${e.imgsMas.length} captura${e.imgsMas.length > 1 ? 's' : ''}</span>`;
+          if (e.imgsMenos) h += `<span class="chip del">−${e.imgsMenos} captura${e.imgsMenos > 1 ? 's' : ''}</span>`;
+          if (e.texto && (e.nuevo || e.campos.includes('texto'))) h += `<div class="htexto">${esc(e.texto)}</div>`;
+          const th = (e.imgsMas || []).map(imgDe).filter(Boolean);
+          if (th.length) h += `<div class="hthumbs">${th.map(im => `<img src="${imgURL(im)}" data-iid="${im.iid}" alt="Captura">`).join('')}</div>`;
+        }
+        d.innerHTML = h; box.appendChild(d);
+      });
+      cuerpo.appendChild(box);
+    });
+    if (!$('#dlgHist').open) $('#dlgHist').showModal();
+  }
+  // filtro de lo cambiado un día: contenidos y capturas añadidas ese día
+  function filtroDia(dia) {
+    const evs = (proc.historial || []).filter(e => e.dia === dia && e.tipo === 'cont');
+    return { eids: new Set(evs.map(e => e.clave)), iids: new Set(evs.flatMap(e => e.imgsMas || [])), dia };
+  }
+  $('#histCuerpo').addEventListener('click', async ev => {
+    const img = ev.target.closest('img[data-iid]');
+    if (img) { const d = $('#dlgImg'); d.querySelector('img').src = img.src; d.showModal(); return; }
+    const b = ev.target.closest('[data-h]'); if (!b) return;
+    const f = filtroDia(b.dataset.dia);
+    if (b.dataset.h === 'texto') {
+      let html = cabHTML(proc), txt = cabTXT(proc);
+      for (const g of grupos_(proc)) {
+        const cs = g.contenidos.filter(c => f.eids.has(c.eid)); if (!cs.length) continue;
+        html += pestHTML(g); txt += pestTXT(g);
+        cs.forEach(c => { html += contHTML(c); txt += contTXT(c); });
+      }
+      if (await copiarHTML(html, txt)) toast('Texto de ' + fechaLarga(f.dia) + ' copiado');
+    }
+    if (b.dataset.h === 'paso') { $('#dlgHist').close(); abrirPasos(f); }
+  });
 
   let modo = 'lectura';
   const enLectura = () => !proc || modo === 'lectura';
@@ -495,17 +646,19 @@ button:disabled{opacity:.55;cursor:wait}
       b.className = 'lectura';
       b.innerHTML = `<span class="txt">👁 Modo consulta — este registro no se puede modificar por error.</span>
         <button data-b="editar" class="primary">✏️ Editar</button>
+        <button data-b="historial">📅 Historial${diasDe(proc).length > 1 ? ` (${diasDe(proc).length} días)` : ''}</button>
         <button data-b="nuevo-cambio" title="Crea un registro nuevo con la fecha de hoy y el mismo nombre e ID de proceso">↻ Nuevo cambio en este proceso (hoy)</button>
         <button data-b="inicio">← Inicio</button>`;
     } else {
       b.className = 'edicion';
       b.innerHTML = `<span class="txt">✏️ Editando — todo se guarda solo mientras escribes.</span>
         <button data-b="terminar" class="primary" title="Vuelve a modo consulta${logueado() ? ' y guarda en Google' : ''}">✓ Terminar edición</button>
+        <button data-b="historial">📅 Historial</button>
         <button data-b="inicio">← Inicio</button>`;
     }
   }
   function abrirRegistro(p, m) {
-    proc = p; lastEid = null; lastGid = null;
+    proc = p; lastEid = null; lastGid = null; snap = foto(p);
     document.body.classList.remove('sin-registro');
     document.querySelectorAll('[data-p]').forEach(el => { el.value = proc[el.dataset.p] || ''; });
     autosize($('#pNotas'));
@@ -535,8 +688,9 @@ button:disabled{opacity:.55;cursor:wait}
     if (saveT) await guardarYa();
     if (proc) { const ant = proc; if (modo === 'edicion') autoSubir(ant); await descartarSiVacio(ant); }
     const g = nuevaPest(); g.contenidos.push(nuevoCont());
-    const p = { id: uid(), nombre, pid, fecha: hoy(), notas: '', pestanas: [g], creado: Date.now(), actualizado: Date.now() };
-    todos.push(p); proc = p; await guardarYa();
+    const p = { id: uid(), nombre, pid, fecha: hoy(), notas: '', pestanas: [g], creado: Date.now(), actualizado: Date.now(),
+      historial: [{ dia: hoy(), hora: horaAhora(), tipo: 'proc', clave: 'proc', nuevo: true, campos: [] }] };
+    todos.push(p); proc = p; snap = foto(p); await guardarYa();
     abrirRegistro(p, 'edicion');
     if (!document.body.classList.contains('bloqueado')) (nombre ? estEl.querySelector('[data-gf=titulo]') : $('#pNombre')).focus();
   }
@@ -552,6 +706,7 @@ button:disabled{opacity:.55;cursor:wait}
     const a = b.dataset.b;
     if (a === 'editar') { setModo('edicion'); $('#pNombre').focus(); }
     if (a === 'terminar') terminarEdicion();
+    if (a === 'historial') abrirHistorial();
     if (a === 'inicio') irInicio();
     if (a === 'nuevo-cambio') { nuevoProceso(proc.nombre, proc.pid); toast('Nuevo cambio del mismo proceso, con fecha de hoy'); }
   });
@@ -581,7 +736,7 @@ button:disabled{opacity:.55;cursor:wait}
     const nube = !!leerCfg().url;
     const lista = [...todos]
       .filter(p => !q || [p.nombre, p.pid, ...p.pestanas.flatMap(g => [g.titulo, g.cid, ...g.contenidos.map(c => c.titulo + ' ' + c.cid)])].join(' ').toLowerCase().includes(q))
-      .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || b.actualizado - a.actualizado);
+      .sort((a, b) => ultimoDia(b).localeCompare(ultimoDia(a)) || b.actualizado - a.actualizado);
     if (!lista.length) { ul.innerHTML = `<li class="vacio">${q ? 'Nada coincide con la búsqueda.' : 'Todavía no hay registros.'}</li>`; return; }
     const pendDe = p => !p.nubeAt || p.pendienteNube;
     const ncDe = p => p.pestanas.reduce((n, x) => n + x.contenidos.filter(c => !contVacio(c)).length, 0);
@@ -595,8 +750,9 @@ button:disabled{opacity:.55;cursor:wait}
         ul.appendChild(h);
         regs.forEach(p => {
           const li = document.createElement('li'); li.className = 'reg fecha' + (p === proc ? ' activo' : '');
-          li.title = `${p.nombre || '(sin nombre)'} — ${fmtFecha(p.fecha)}`;
-          li.innerHTML = `<span class="dot ${nube ? (pendDe(p) ? 'pend' : 'ok') : ''}"></span><span class="nm">${esc(fechaLarga(p.fecha))}</span><span class="cnt" title="contenidos">${ncDe(p)}</span>`;
+          const ds = diasDe(p);
+          li.title = `${p.nombre || '(sin nombre)'}\nDías con cambios: ${ds.map(d => fmtFecha(d)).join(', ')}`;
+          li.innerHTML = `<span class="dot ${nube ? (pendDe(p) ? 'pend' : 'ok') : ''}"></span><span class="nm">${esc(fechaLarga(ds[0] || p.fecha))}${ds.length > 1 ? ` · ${ds.length} días` : ''}</span><span class="cnt" title="contenidos">${ncDe(p)}</span>`;
           li.onclick = () => cargar(p.id); ul.appendChild(li);
         });
       }
@@ -604,12 +760,12 @@ button:disabled{opacity:.55;cursor:wait}
     }
     let grupoActual = null;
     lista.forEach(p => {
-      const g = etiquetaDia(p.fecha);
+      const g = etiquetaDia(ultimoDia(p));
       if (g !== grupoActual) { grupoActual = g; const h = document.createElement('li'); h.className = 'grp'; h.textContent = g; ul.appendChild(h); }
       const li = document.createElement('li'); li.className = 'reg' + (p === proc ? ' activo' : '');
       const np = p.pestanas.filter(x => !x.directo).length, nc = p.pestanas.reduce((n, x) => n + x.contenidos.filter(c => !contVacio(c)).length, 0);
       const pend = !p.nubeAt || p.pendienteNube;
-      li.title = `${p.nombre || '(sin nombre)'}\nID: ${p.pid || '—'}\nFecha: ${fmtFecha(p.fecha)}\n${np} pestaña(s) · ${nc} contenido(s)` + (nube ? `\n${pend ? 'Con cambios sin guardar en Google' : 'Guardado en Google'}` : '');
+      li.title = `${p.nombre || '(sin nombre)'}\nID: ${p.pid || '—'}\nDías con cambios: ${diasDe(p).map(d => fmtFecha(d)).join(', ')}\n${np} pestaña(s) · ${nc} contenido(s)` + (nube ? `\n${pend ? 'Con cambios sin guardar en Google' : 'Guardado en Google'}` : '');
       li.innerHTML = `<span class="dot ${nube ? (pend ? 'pend' : 'ok') : ''}"></span><span class="nm">${esc(p.nombre || '(sin nombre)')}</span><span class="cnt" title="contenidos">${nc}</span>`;
       li.onclick = () => cargar(p.id); ul.appendChild(li);
     });
@@ -654,7 +810,7 @@ button:disabled{opacity:.55;cursor:wait}
       </div>
       <textarea data-f="texto" rows="2" placeholder="Qué has modificado… (las líneas que empiecen por - salen como viñetas)">${esc(c.texto)}</textarea>
       <div class="capturas" tabindex="0"><div class="thumbs"></div><div class="hint"></div></div>
-      <div class="efoot"><button data-a="ctexto">Copiar texto</button><button data-a="cbloque">Copiar contenido con capturas</button></div>`;
+      <div class="efoot"><span class="fechas">${c.creado ? 'Añadido ' + fmtFecha(c.creado).slice(0, 5) : ''}${c.mod && c.mod !== c.creado ? ' · último cambio ' + fmtFecha(c.mod).slice(0, 5) : ''}</span><button data-a="ctexto">Copiar texto</button><button data-a="cbloque">Copiar contenido con capturas</button></div>`;
     renderThumbs(d, c);
     requestAnimationFrame(() => autosize(d.querySelector('textarea')));
     return d;
@@ -924,16 +1080,19 @@ button:disabled{opacity:.55;cursor:wait}
 
   /* ---------- pegado paso a paso ---------- */
   let pasos = [], idx = 0;
-  function construirPasos() {
+  function construirPasos(filtro) {
     const out = []; let html = cabHTML(proc), txt = cabTXT(proc), nombres = ['Proceso'];
     const flush = () => { if (html) out.push({ tipo: 'texto', label: 'Texto: ' + nombres.join(' · '), html, txt }); html = ''; txt = ''; nombres = []; };
     for (const g of grupos_(proc)) {
+      const cs = g.contenidos.filter(c => !contVacio(c) && (!filtro || filtro.eids.has(c.eid)));
+      if (filtro && !cs.length) continue;
       if (!g.directo) { html += pestHTML(g); txt += pestTXT(g); nombres.push(`pestaña «${g.titulo || 'sin título'}»`); }
-      for (const c of g.contenidos.filter(c => !contVacio(c))) {
+      for (const c of cs) {
         html += contHTML(c); txt += contTXT(c); nombres.push(`«${c.titulo || 'sin título'}»`);
-        c.imgs.forEach((im, k) => {
+        const imgs = filtro ? c.imgs.filter(im => filtro.iids.has(im.iid)) : c.imgs;
+        imgs.forEach((im, k) => {
           flush();
-          out.push({ tipo: 'imagen', label: `Captura ${c.imgs.length > 1 ? (k + 1) + '/' + c.imgs.length + ' ' : ''}de «${c.titulo || 'sin título'}»`, blob: im.blob, im });
+          out.push({ tipo: 'imagen', label: `Captura ${imgs.length > 1 ? (k + 1) + '/' + imgs.length + ' ' : ''}de «${c.titulo || 'sin título'}»`, blob: im.blob, im });
         });
       }
     }
@@ -953,11 +1112,13 @@ button:disabled{opacity:.55;cursor:wait}
     });
     ol.querySelector('.actual')?.scrollIntoView({ block: 'nearest' });
   }
-  $('#btnPaso').onclick = () => {
+  $('#btnPaso').onclick = () => abrirPasos(null);
+  function abrirPasos(filtro) {
     if (saveT) guardarYa();
-    pasos = construirPasos(); idx = 0; esperandoVuelta = false; $('#pasoMsg').textContent = ''; $('#pasoMsg').className = '';
+    $('#dlgPaso h2').textContent = filtro ? 'Pegado paso a paso — ' + fechaLarga(filtro.dia) : 'Pegado paso a paso';
+    pasos = construirPasos(filtro); idx = 0; esperandoVuelta = false; $('#pasoMsg').textContent = ''; $('#pasoMsg').className = '';
     renderPasos(); $('#dlgPaso').showModal(); $('#btnSig').focus();
-  };
+  }
   let esperandoVuelta = false, copiando = false, ultimoAuto = 0;
   try { $('#chkAuto').checked = localStorage.getItem('rc-auto') !== '0'; } catch (e) { $('#chkAuto').checked = true; }
   $('#chkAuto').onchange = () => { try { localStorage.setItem('rc-auto', $('#chkAuto').checked ? '1' : '0'); } catch (e) {} $('#btnSig').focus(); };
