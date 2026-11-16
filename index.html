@@ -183,7 +183,7 @@ button:disabled{opacity:.55;cursor:wait}
         <label class="small">Fecha<input id="pFecha" data-p="fecha" type="date"></label>
       </div>
       <label>Notas generales (opcional)<textarea id="pNotas" data-p="notas" rows="2" placeholder="Motivo del cambio, petición, etc."></textarea></label>
-      <div class="procfoot"><button id="btnCopiarNomId" title="Copia «Nombre-ID» para ponerlo entre los corchetes de Publicar/modificar [ ] en Confluence">📋 Copiar nombre-ID</button><span style="flex:1"></span><button id="btnMismo" class="link" title="Crea un registro aparte, con la fecha de hoy y el mismo nombre e ID de proceso">↻ Otro cambio en este proceso (otro día)</button></div>
+      <div class="procfoot"><button id="btnCopiarNomId" title="Copia «Nombre-ID» para ponerlo entre los corchetes de Publicar/modificar [ ] en Confluence">📋 Copiar nombre-ID</button><button id="btnCopiarNom" title="Copia solo el nombre del proceso">📋 Nombre</button><button id="btnCopiarId" title="Copia solo el ID del proceso">📋 ID</button><span style="flex:1"></span><button id="btnMismo" class="link" title="Crea un registro aparte, con la fecha de hoy y el mismo nombre e ID de proceso">↻ Otro cambio en este proceso (otro día)</button></div>
     </section>
 
     <div id="estructura"></div>
@@ -275,6 +275,7 @@ button:disabled{opacity:.55;cursor:wait}
     <h3>Proceso (papá)</h3>
     <dl>
       <dt>📋 Copiar nombre-ID</dt><dd>Copia «Nombre del proceso-ID» para pegarlo entre los corchetes de <i>Publicar/modificar [ ]</i> en Confluence.</dd>
+      <dt>📋 Nombre · 📋 ID</dt><dd>Copian solo el nombre del proceso o solo su ID.</dd>
       <dt>↻ Otro cambio en este proceso (otro día)</dt><dd>Cuando vuelves a tocar el mismo papá otro día o por otra petición: crea un registro aparte con la fecha de hoy y el nombre e ID ya puestos. El registro anterior no se toca.</dd>
     </dl>
 
@@ -557,14 +558,15 @@ button:disabled{opacity:.55;cursor:wait}
   $('#btnAddPest').onclick = addPestana;
   $('#btnAddDirecto').onclick = () => addCont(grupoDirecto(true));
   $('#btnNuevo').onclick = () => nuevoProceso();
-  $('#btnCopiarNomId').onclick = async () => {
-    const nom = (proc.nombre || '').trim(), id = (proc.pid || '').trim();
-    if (!nom && !id) { toast('Primero pon el nombre y el ID del proceso', true); return; }
-    const t = [nom, id].filter(Boolean).join('-');
+  async function copiarPlano(t, faltaMsg) {
+    if (!t) { toast(faltaMsg, true); return; }
     let ok = false;
     try { await navigator.clipboard.writeText(t); ok = true; } catch (e) { ok = await copiarHTML(esc(t), t); }
     if (ok) toast('Copiado: ' + t);
-  };
+  }
+  $('#btnCopiarNomId').onclick = () => copiarPlano([(proc.nombre || '').trim(), (proc.pid || '').trim()].filter(Boolean).join('-'), 'Primero pon el nombre y el ID del proceso');
+  $('#btnCopiarNom').onclick = () => copiarPlano((proc.nombre || '').trim(), 'Primero pon el nombre del proceso');
+  $('#btnCopiarId').onclick = () => copiarPlano((proc.pid || '').trim(), 'Primero pon el ID del proceso');
   $('#btnMismo').onclick = () => {
     if (!proc.nombre && !proc.pid) { toast('Primero pon el nombre o el ID del proceso', true); return; }
     nuevoProceso(proc.nombre, proc.pid); toast('Nuevo cambio del mismo proceso, con fecha de hoy');
