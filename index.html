@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Registro de cambios</title>
+<style>
+:root{--ac:#FF7900;--ac2:#e56d00;--tx:#222;--mut:#6b6b6b;--bd:#dedede;--bg:#f5f5f4;--card:#fff;--danger:#c0392b}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--tx);background:var(--bg);padding-bottom:64px}
+button,.btn{font:inherit;border:1px solid var(--bd);background:#fff;border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--tx);white-space:nowrap}
+button:hover,.btn:hover{border-color:#bbb;background:#fafafa}
+button.primary{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+button.primary:hover{background:var(--ac2)}
+button.danger{color:var(--danger)}
+input,select,textarea{font:inherit;border:1px solid var(--bd);border-radius:6px;padding:7px 9px;background:#fff;color:var(--tx);width:100%}
+input:focus,select:focus,textarea:focus,.capturas:focus{outline:2px solid var(--ac);outline-offset:-1px;border-color:var(--ac)}
+textarea{resize:vertical;min-height:58px}
+label{display:block;font-size:12px;color:var(--mut);font-weight:600}
+label input,label textarea,label select{margin-top:3px;font-weight:400}
+header{display:flex;align-items:center;gap:12px;padding:10px 18px;background:#fff;border-bottom:3px solid var(--ac);position:sticky;top:0;z-index:5}
+header h1{font-size:17px;margin:0;flex:1}
+header .actions{display:flex;gap:6px}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:18px;padding:18px;max-width:1300px;margin:0 auto}
+aside{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 150px);overflow:auto}
+aside ul{list-style:none;margin:8px 0 0;padding:0}
+aside li{padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid transparent}
+aside li:hover{background:#fff;border-color:var(--bd)}
+aside li.activo{background:#fff;border-color:var(--ac)}
+aside li b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+aside li small{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:10px;align-items:end}
+.row>*{flex:1}
+.row>.small{flex:0 0 170px}
+.proc{border-top:4px solid var(--ac)}
+.proc .row{margin-bottom:10px}
+.entrada{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:10px;transition:border-color .15s}
+.entrada.es-contenido{margin-left:34px;background:#fcfcfc}
+.entrada.activa{border-color:var(--ac);box-shadow:0 0 0 2px #ff79001f}
+.ehead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.ehead .num{width:24px;height:24px;flex:0 0 24px;border-radius:50%;background:var(--ac);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+.es-contenido .num{background:#8c8c8c}
+.ehead select{flex:0 0 118px}
+.ehead input[data-f=titulo]{flex:1;font-weight:600}
+.ehead input.cid{flex:0 0 170px}
+.ebtns{display:flex;gap:4px}
+.ebtns button{padding:5px 8px}
+.capturas{margin-top:8px;border:2px dashed #d2d2d2;border-radius:8px;padding:8px;cursor:pointer;min-height:48px}
+.capturas.drag{border-color:var(--ac);background:#fff6ee}
+.capturas .hint{color:var(--mut);font-size:13px;text-align:center;padding:6px}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px}
+.thumbs:empty{display:none}
+figure{margin:0;border:1px solid var(--bd);border-radius:6px;overflow:hidden;background:#fff;width:210px}
+figure img{display:block;width:100%;height:120px;object-fit:cover;object-position:top left;cursor:zoom-in;background:#eee}
+figcaption{display:flex;gap:3px;padding:4px}
+figcaption button{padding:3px 7px;font-size:12px}
+figcaption button:first-child{flex:1}
+.efoot{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+.efoot button{font-size:13px}
+.add{display:flex;gap:8px;margin:4px 0 20px}
+.add button{border-style:dashed}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);padding:10px 18px;display:flex;align-items:center;gap:10px;z-index:5}
+.bar #estado{flex:1;color:var(--mut);font-size:13px}
+.bar div{display:flex;gap:6px}
+.atajos{color:var(--mut);font-size:12px;margin:-10px 0 18px}
+kbd{background:#eee;border:1px solid #ccc;border-radius:3px;padding:0 4px;font-size:11px}
+dialog{border:none;border-radius:12px;padding:18px;width:min(640px,94vw);box-shadow:0 10px 40px #0004}
+dialog::backdrop{background:#0006}
+.dhead{display:flex;align-items:center;margin-bottom:6px}
+.dhead h2{flex:1;margin:0;font-size:17px}
+.dhead button{border:none;font-size:18px}
+.ayuda{color:var(--mut);margin:4px 0 12px}
+.big{width:100%;padding:14px;font-size:16px;white-space:normal}
+#pasoPrev{margin:10px 0;text-align:center}
+#pasoPrev img{max-width:100%;max-height:180px;border:1px solid var(--bd);border-radius:6px}
+#pasoMsg{min-height:20px;text-align:center;color:#2e7d32;font-weight:600;margin-top:8px}
+#pasosLista{max-height:34vh;overflow:auto;padding-left:22px;margin:8px 0}
+#pasosLista li{padding:4px 6px;border-radius:5px;cursor:pointer;color:var(--mut)}
+#pasosLista li.hecho{color:#2e7d32}
+#pasosLista li.hecho::after{content:" ✓"}
+#pasosLista li.actual{background:#fff1e5;color:var(--tx);font-weight:600}
+.dfoot{display:flex;gap:8px;justify-content:space-between}
+#dlgImg{width:auto;max-width:95vw;padding:6px;background:#222}
+#dlgImg img{display:block;max-width:92vw;max-height:88vh;cursor:zoom-out}
+#toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%) translateY(20px);background:#333;color:#fff;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%)}
+#toast.err{background:var(--danger)}
+@media (max-width:820px){.layout{grid-template-columns:1fr}aside{position:static;max-height:220px}.row{flex-wrap:wrap}.ehead{flex-wrap:wrap}.entrada.es-contenido{margin-left:14px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Registro de cambios</h1>
+  <div class="actions">
+    <button id="btnNuevo" class="primary">+ Nuevo proceso</button>
+    <button id="btnExport" title="Descarga una copia de seguridad de todos los procesos">Exportar</button>
+    <label class="btn" title="Carga una copia exportada">Importar<input type="file" id="fileImport" accept=".json,application/json" hidden></label>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <input id="buscar" placeholder="Buscar proceso, título o ID…">
+    <ul id="lista"></ul>
+  </aside>
+
+  <main>
+    <section class="card proc">
+      <div class="row">
+        <label>Nombre del proceso<input id="pNombre" data-p="nombre" placeholder="Ej.: Atención en idiomas"></label>
+        <label class="small">ID del proceso<input id="pId" data-p="pid"></label>
+        <label class="small">Fecha<input id="pFecha" data-p="fecha" type="date"></label>
+      </div>
+      <label>Notas generales (opcional)<textarea id="pNotas" data-p="notas" rows="2" placeholder="Motivo del cambio, petición, etc."></textarea></label>
+    </section>
+
+    <div id="entradas"></div>
+
+    <div class="add">
+      <button data-add="Pestaña">+ Pestaña</button>
+      <button data-add="Contenido">+ Contenido</button>
+      <button id="btnLista">+ Varias desde una lista</button>
+    </div>
+    <p class="atajos">Atajos: <kbd>Alt</kbd>+<kbd>P</kbd> nueva pestaña · <kbd>Alt</kbd>+<kbd>C</kbd> nuevo contenido · <kbd>Ctrl</kbd>+<kbd>V</kbd> con una captura en el portapapeles la añade al elemento marcado en naranja · Si pegas «Título⇥ID» en el título, se separa solo.</p>
+  </main>
+</div>
+
+<div class="bar">
+  <span id="estado">Listo</span>
+  <div>
+    <button id="btnPaso" class="primary" title="Copia el texto y cada captura por turnos para pegarlos en Confluence">Pegado paso a paso</button>
+    <button id="btnTodo" title="Texto + capturas de una vez (si Confluence lo admite)">Copiar todo</button>
+    <button id="btnTexto">Copiar solo texto</button>
+    <button id="btnBorrar" class="danger">Borrar proceso</button>
+  </div>
+</div>
+
+<dialog id="dlgPaso">
+  <div class="dhead"><h2>Pegado paso a paso</h2><button data-close title="Cerrar">✕</button></div>
+  <p class="ayuda">Pulsa el botón (o <b>Enter</b>) → ve a Confluence → <b>Ctrl+V</b> → vuelve aquí y repite.</p>
+  <button id="btnSig" class="primary big"></button>
+  <div id="pasoMsg"></div>
+  <div id="pasoPrev"></div>
+  <ol id="pasosLista"></ol>
+  <div class="dfoot"><button id="btnAnt">← Paso anterior</button><button id="btnReini">Empezar de nuevo</button></div>
+</dialog>
+
+<dialog id="dlgLista">
+  <div class="dhead"><h2>Añadir varias desde una lista</h2><button data-close title="Cerrar">✕</button></div>
+  <p class="ayuda">Una por línea: <b>Título</b> e <b>ID</b> separados por tabulador (tal cual se copia de una tabla). Si no hay tabulador, se toma como ID la última palabra cuando es un número largo.</p>
+  <textarea id="txtLista" rows="8" placeholder="Información general&#9;1234567&#10;Requisitos&#9;1234568"></textarea>
+  <div class="row" style="margin-top:10px">
+    <label>Tipo<select id="selListaTipo"><option>Pestaña</option><option>Contenido</option></select></label>
+    <button id="btnListaOk" class="primary" style="flex:0 0 auto">Añadir</button>
+  </div>
+</dialog>
+
+<dialog id="dlgImg"><img alt="Captura"></dialog>
+<div id="toast"></div>
+
+<script>
+(async function () {
+  const $ = s => document.querySelector(s);
+  const entradasEl = $('#entradas');
+  let db = null, todos = [], proc = null, saveT = null, lastEid = null;
+  const urls = new Map();
+
+  /* ---------- utilidades ---------- */
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+  const hoy = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+  const fmtFecha = iso => iso ? iso.split('-').reverse().join('/') : '';
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const imgURL = im => { if (!urls.has(im.iid)) urls.set(im.iid, URL.createObjectURL(im.blob)); return urls.get(im.iid); };
+  const ent = eid => proc.entradas.find(e => e.eid === eid);
+  const cardDe = eid => entradasEl.querySelector(`.entrada[data-eid="${eid}"]`);
+  const swap = (a, i, j) => { [a[i], a[j]] = [a[j], a[i]]; };
+  const autosize = t => { if (!t) return; t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; };
+  function toast(msg, err) {
+    const t = $('#toast'); t.textContent = msg; t.className = 'show' + (err ? ' err' : '');
+    clearTimeout(t._t); t._t = setTimeout(() => t.className = '', err ? 4500 : 2600);
+  }
+  const blobToDataURL = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(b); });
+  const dataURLToBlob = async u => (await fetch(u)).blob();
+  async function aPNG(blob) {
+    if (blob.type === 'image/png') return blob;
+    const bmp = await createImageBitmap(blob);
+    const cv = document.createElement('canvas'); cv.width = bmp.width; cv.height = bmp.height;
+    cv.getContext('2d').drawImage(bmp, 0, 0);
+    return new Promise(r => cv.toBlob(r, 'image/png'));
+  }
+
+  /* ---------- almacenamiento (IndexedDB, en tu navegador) ---------- */
+  const req = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const store = m => db.transaction('procesos', m).objectStore('procesos');
+  function openDB() {
+    const r = indexedDB.open('registro-cambios', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('procesos', { keyPath: 'id' });
+    return req(r);
+  }
+  async function guardarYa() {
+    clearTimeout(saveT); saveT = null;
+    if (!proc) return;
+    proc.actualizado = Date.now();
+    if (db) { try { await req(store('readwrite').put(proc)); } catch (e) { toast('No se pudo guardar: ' + e.message, true); return; } }
+    if (!todos.includes(proc)) todos.push(proc);
+    $('#estado').textContent = db ? 'Guardado en este navegador ✓' : 'Sin almacenamiento: exporta antes de cerrar';
+    renderLista();
+  }
+  function guardar() { $('#estado').textContent = 'Guardando…'; clearTimeout(saveT); saveT = setTimeout(guardarYa, 400); }
+  document.addEventListener('visibilitychange', () => { if (document.hidden && saveT) guardarYa(); });
+  window.addEventListener('beforeunload', () => { if (saveT) guardarYa(); });
+
+  /* ---------- modelo ---------- */
+  const nuevaEntrada = (tipo = 'Pestaña', titulo = '', cid = '') => ({ eid: uid(), tipo, titulo, cid, texto: '', imgs: [] });
+  function nuevoProceso() {
+    if (saveT) guardarYa();
+    proc = { id: uid(), nombre: '', pid: '', fecha: hoy(), notas: '', entradas: [nuevaEntrada('Pestaña')], creado: Date.now(), actualizado: Date.now() };
+    todos.push(proc); guardarYa(); renderProc(); $('#pNombre').focus();
+  }
+  function cargar(id) {
+    if (saveT) guardarYa();
+    const p = todos.find(x => x.id === id); if (!p) return;
+    proc = p; try { localStorage.setItem('rc-ultimo', id); } catch (e) {}
+    renderProc();
+  }
+
+  /* ---------- pintado ---------- */
+  function renderLista() {
+    const q = $('#buscar').value.trim().toLowerCase();
+    const ul = $('#lista'); ul.innerHTML = '';
+    [...todos].sort((a, b) => b.actualizado - a.actualizado)
+      .filter(p => !q || [p.nombre, p.pid, ...p.entradas.map(e => e.titulo + ' ' + e.cid)].join(' ').toLowerCase().includes(q))
+      .forEach(p => {
+        const li = document.createElement('li'); if (p === proc) li.className = 'activo';
+        li.innerHTML = `<b>${esc(p.nombre || '(sin nombre)')}</b><small>${esc(p.pid || 'sin ID')} · ${fmtFecha(p.fecha)} · ${p.entradas.length} elem.</small>`;
+        li.onclick = () => cargar(p.id); ul.appendChild(li);
+      });
+  }
+  function renderProc() {
+    try { localStorage.setItem('rc-ultimo', proc.id); } catch (e) {}
+    document.querySelectorAll('[data-p]').forEach(el => { el.value = proc[el.dataset.p] || ''; });
+    autosize($('#pNotas'));
+    renderEntradas(); renderLista();
+  }
+  function renderEntradas() {
+    entradasEl.innerHTML = '';
+    proc.entradas.forEach((e, i) => entradasEl.appendChild(cardEl(e, i)));
+    marcarActiva();
+  }
+  function cardEl(e, i) {
+    const d = document.createElement('div');
+    d.className = 'entrada' + (e.tipo === 'Contenido' ? ' es-contenido' : '');
+    d.dataset.eid = e.eid;
+    d.innerHTML = `<div class="ehead">
+        <span class="num">${i + 1}</span>
+        <select data-f="tipo"><option${e.tipo === 'Pestaña' ? ' selected' : ''}>Pestaña</option><option${e.tipo === 'Contenido' ? ' selected' : ''}>Contenido</option></select>
+        <input data-f="titulo" placeholder="Título" value="${esc(e.titulo)}">
+        <input data-f="cid" class="cid" placeholder="ID" value="${esc(e.cid)}">
+        <div class="ebtns"><button data-a="up" title="Subir">↑</button><button data-a="down" title="Bajar">↓</button><button data-a="dup" title="Duplicar">⧉</button><button data-a="del" class="danger" title="Eliminar">✕</button></div>
+      </div>
+      <textarea data-f="texto" rows="2" placeholder="Qué has modificado… (las líneas que empiecen por - salen como viñetas)">${esc(e.texto)}</textarea>
+      <div class="capturas" tabindex="0"><div class="thumbs"></div><div class="hint"></div></div>
+      <div class="efoot"><button data-a="ctexto">Copiar texto</button><button data-a="cbloque">Copiar bloque con capturas</button></div>`;
+    renderThumbs(d, e);
+    requestAnimationFrame(() => autosize(d.querySelector('textarea')));
+    return d;
+  }
+  function renderThumbs(card, e) {
+    const t = card.querySelector('.thumbs'); t.innerHTML = '';
+    e.imgs.forEach(im => {
+      const f = document.createElement('figure'); f.dataset.iid = im.iid;
+      f.innerHTML = `<img src="${imgURL(im)}" data-a="ver" alt="Captura"><figcaption><button data-a="cimg">📋 Copiar</button><button data-a="izq" title="Mover antes">←</button><button data-a="der" title="Mover después">→</button><button data-a="qimg" class="danger" title="Quitar">✕</button></figcaption>`;
+      t.appendChild(f);
+    });
+    card.querySelector('.hint').innerHTML = e.imgs.length
+      ? '📋 Clic aquí y <b>Ctrl+V</b> para añadir otra captura'
+      : '📋 Clic aquí y <b>Ctrl+V</b> para pegar la captura · o arrastra una imagen';
+  }
+  function marcarActiva() {
+    const eid = (lastEid && ent(lastEid)) ? lastEid : proc.entradas.at(-1)?.eid;
+    entradasEl.querySelectorAll('.entrada').forEach(c => c.classList.toggle('activa', c.dataset.eid === eid));
+  }
+
+  /* ---------- eventos del proceso ---------- */
+  document.querySelectorAll('[data-p]').forEach(el => el.addEventListener('input', () => {
+    proc[el.dataset.p] = el.value; if (el.tagName === 'TEXTAREA') autosize(el); guardar();
+  }));
+  $('#buscar').addEventListener('input', renderLista);
+  $('#btnNuevo').onclick = nuevoProceso;
+
+  function anadir(tipo, foco = true) {
+    const e = nuevaEntrada(tipo); proc.entradas.push(e); lastEid = e.eid;
+    renderEntradas(); guardar();
+    if (foco) { const c = cardDe(e.eid); c.querySelector('[data-f=titulo]').focus(); c.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  }
+  document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => anadir(b.dataset.add));
+  document.addEventListener('keydown', ev => {
+    if (document.querySelector('dialog[open]')) return;
+    if (ev.altKey && !ev.ctrlKey && (ev.key === 'p' || ev.key === 'P')) { ev.preventDefault(); anadir('Pestaña'); }
+    if (ev.altKey && !ev.ctrlKey && (ev.key === 'c' || ev.key === 'C')) { ev.preventDefault(); anadir('Contenido'); }
+  });
+
+  /* ---------- eventos de las entradas ---------- */
+  entradasEl.addEventListener('focusin', ev => {
+    const c = ev.target.closest('.entrada'); if (c) { lastEid = c.dataset.eid; marcarActiva(); }
+  });
+  entradasEl.addEventListener('input', ev => {
+    const c = ev.target.closest('.entrada'), f = ev.target.dataset.f; if (!c || !f) return;
+    const e = ent(c.dataset.eid); e[f] = ev.target.value;
+    if (f === 'tipo') c.classList.toggle('es-contenido', e.tipo === 'Contenido');
+    if (ev.target.tagName === 'TEXTAREA') autosize(ev.target);
+    guardar();
+  });
+  entradasEl.addEventListener('click', async ev => {
+    const c = ev.target.closest('.entrada'); if (!c) return;
+    const b = ev.target.closest('[data-a]');
+    if (!b) { const z = ev.target.closest('.capturas'); if (z) z.focus(); return; }
+    const e = ent(c.dataset.eid), i = proc.entradas.indexOf(e), a = b.dataset.a;
+    const fig = b.closest('figure'); const k = fig ? e.imgs.findIndex(x => x.iid === fig.dataset.iid) : -1;
+    switch (a) {
+      case 'up': if (i > 0) { swap(proc.entradas, i, i - 1); renderEntradas(); guardar(); } break;
+      case 'down': if (i < proc.entradas.length - 1) { swap(proc.entradas, i, i + 1); renderEntradas(); guardar(); } break;
+      case 'dup': {
+        const n = { ...e, eid: uid(), imgs: e.imgs.map(x => ({ iid: uid(), blob: x.blob })) };
+        proc.entradas.splice(i + 1, 0, n); lastEid = n.eid; renderEntradas(); guardar(); break;
+      }
+      case 'del':
+        if ((!e.titulo && !e.cid && !e.texto && !e.imgs.length) || confirm(`¿Eliminar «${e.titulo || 'sin título'}» y sus capturas?`)) {
+          proc.entradas.splice(i, 1); renderEntradas(); guardar();
+        } break;
+      case 'ctexto': await copiarHTML(entradaHTML(e), entradaTXT(e)) && toast('Texto copiado'); break;
+      case 'cbloque': await copiarHTML(await entradaHTMLconImgs(e), entradaTXT(e)) && toast('Bloque copiado (texto + capturas)'); break;
+      case 'cimg': await copiarImagen(e.imgs[k].blob) && toast('Captura copiada → Ctrl+V en Confluence'); break;
+      case 'izq': if (k > 0) { swap(e.imgs, k, k - 1); renderThumbs(c, e); guardar(); } break;
+      case 'der': if (k < e.imgs.length - 1) { swap(e.imgs, k, k + 1); renderThumbs(c, e); guardar(); } break;
+      case 'qimg': {
+        const [im] = e.imgs.splice(k, 1); if (urls.has(im.iid)) { URL.revokeObjectURL(urls.get(im.iid)); urls.delete(im.iid); }
+        renderThumbs(c, e); guardar(); break;
+      }
+      case 'ver': { const d = $('#dlgImg'); d.querySelector('img').src = imgURL(e.imgs[k]); d.showModal(); break; }
+    }
+  });
+  $('#dlgImg').addEventListener('click', () => $('#dlgImg').close());
+
+  // arrastrar imágenes
+  entradasEl.addEventListener('dragover', ev => { const z = ev.target.closest('.capturas'); if (z) { ev.preventDefault(); z.classList.add('drag'); } });
+  entradasEl.addEventListener('dragleave', ev => { const z = ev.target.closest('.capturas'); if (z) z.classList.remove('drag'); });
+  entradasEl.addEventListener('drop', async ev => {
+    const z = ev.target.closest('.capturas'); if (!z) return; ev.preventDefault(); z.classList.remove('drag');
+    const e = ent(z.closest('.entrada').dataset.eid);
+    for (const f of [...ev.dataTransfer.files].filter(f => f.type.startsWith('image/'))) await addImg(e, f);
+  });
+
+  // pegar (Ctrl+V): imágenes al elemento activo; «Título⇥ID» se separa
+  document.addEventListener('paste', async ev => {
+    if (document.querySelector('dialog[open]')) return;
+    const cd = ev.clipboardData; if (!cd) return;
+    const files = [...cd.items].filter(it => it.kind === 'file' && it.type.startsWith('image/')).map(it => it.getAsFile()).filter(Boolean);
+    if (files.length) {
+      ev.preventDefault();
+      const c = ev.target.closest && ev.target.closest('.entrada');
+      let e = c ? ent(c.dataset.eid) : (ent(lastEid) || proc.entradas.at(-1));
+      if (!e) { e = nuevaEntrada('Pestaña'); proc.entradas.push(e); renderEntradas(); }
+      for (const f of files) await addImg(e, f);
+      return;
+    }
+    const t = ev.target;
+    if (t.dataset && t.dataset.f === 'titulo') {
+      const txt = cd.getData('text/plain').replace(/\r/g, '').trim();
+      if (txt.includes('\t') && !txt.includes('\n')) {
+        ev.preventDefault();
+        const partes = txt.split('\t').map(s => s.trim()).filter(Boolean);
+        const e = ent(t.closest('.entrada').dataset.eid);
+        e.cid = partes.length > 1 ? partes.pop() : e.cid; e.titulo = partes.join(' ');
+        t.value = e.titulo; t.closest('.entrada').querySelector('[data-f=cid]').value = e.cid; guardar();
+      }
+    }
+  });
+  async function addImg(e, file) {
+    try {
+      const blob = await aPNG(file);
+      e.imgs.push({ iid: uid(), blob });
+      const c = cardDe(e.eid); if (c) { renderThumbs(c, e); lastEid = e.eid; marcarActiva(); }
+      guardar(); toast(`Captura añadida a «${e.titulo || 'sin título'}»`);
+    } catch (err) { toast('No se pudo leer la imagen', true); }
+  }
+
+  /* ---------- lista rápida ---------- */
+  $('#btnLista').onclick = () => { $('#txtLista').value = ''; $('#dlgLista').showModal(); $('#txtLista').focus(); };
+  $('#btnListaOk').onclick = () => {
+    const tipo = $('#selListaTipo').value; let n = 0;
+    // si el único elemento está vacío, se reutiliza
+    if (proc.entradas.length === 1) { const u = proc.entradas[0]; if (!u.titulo && !u.cid && !u.texto && !u.imgs.length) proc.entradas = []; }
+    for (const raw of $('#txtLista').value.replace(/\r/g, '').split('\n')) {
+      const l = raw.trim(); if (!l) continue;
+      let titulo = l, cid = '';
+      if (l.includes('\t')) { const p = l.split('\t').map(s => s.trim()).filter(Boolean); cid = p.length > 1 ? p.pop() : ''; titulo = p.join(' '); }
+      else { const m = l.match(/^(.*\S)\s+(\d{4,}|[0-9a-f]{16,})$/i); if (m) { titulo = m[1]; cid = m[2]; } }
+      proc.entradas.push(nuevaEntrada(tipo, titulo, cid)); n++;
+    }
+    $('#dlgLista').close(); renderEntradas(); guardar(); toast(`${n} elemento(s) añadidos`);
+  };
+  document.addEventListener('click', ev => { const b = ev.target.closest('[data-close]'); if (b) b.closest('dialog').close(); });
+
+  /* ---------- generación de lo que se copia ---------- */
+  function textoHTML(t) {
+    t = (t || '').replace(/\r/g, ''); if (!t.trim()) return '';
+    let out = '', ul = false;
+    for (const raw of t.split('\n')) {
+      const l = raw.trimEnd(), m = l.match(/^\s*[-•*►]\s+(.*)$/);
+      if (m) { if (!ul) { out += '<ul>'; ul = true; } out += `<li>${esc(m[1])}</li>`; }
+      else { if (ul) { out += '</ul>'; ul = false; } if (l.trim()) out += `<p>${esc(l)}</p>`; }
+    }
+    return out + (ul ? '</ul>' : '');
+  }
+  const cabHTML = p => `<h2>${esc(p.nombre || 'Proceso sin nombre')}</h2><p><strong>ID del proceso:</strong> ${esc(p.pid || '—')}${p.fecha ? ` &nbsp;|&nbsp; <strong>Fecha:</strong> ${fmtFecha(p.fecha)}` : ''}</p>` + textoHTML(p.notas);
+  const cabTXT = p => `${p.nombre || 'Proceso sin nombre'}\nID del proceso: ${p.pid || '—'}${p.fecha ? ' | Fecha: ' + fmtFecha(p.fecha) : ''}\n${p.notas ? p.notas.trim() + '\n' : ''}\n`;
+  const entradaHTML = e => { const h = e.tipo === 'Contenido' ? 'h4' : 'h3'; return `<${h}>${esc(e.tipo)}: ${esc(e.titulo || '(sin título)')}</${h}>` + (e.cid ? `<p><strong>ID:</strong> ${esc(e.cid)}</p>` : '') + textoHTML(e.texto); };
+  const entradaTXT = e => `${e.tipo}: ${e.titulo || '(sin título)'}\n` + (e.cid ? `ID: ${e.cid}\n` : '') + (e.texto ? e.texto.trim() + '\n' : '') + '\n';
+  const imgHTML = async im => `<p><img src="${await blobToDataURL(im.blob)}" alt="Captura" style="max-width:100%"></p>`;
+  async function entradaHTMLconImgs(e) { let h = entradaHTML(e); for (const im of e.imgs) h += await imgHTML(im); return h; }
+
+  /* ---------- portapapeles ---------- */
+  async function copiarHTML(html, text) {
+    try {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' })
+      })]);
+      return true;
+    } catch (err) {
+      // plan B: copiar seleccionando un bloque oculto
+      const host = document.querySelector('dialog[open]') || document.body;
+      const div = document.createElement('div'); div.contentEditable = 'true'; div.innerHTML = html;
+      div.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      host.appendChild(div);
+      const r = document.createRange(); r.selectNodeContents(div);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      s.removeAllRanges(); div.remove();
+      if (!ok) toast('El navegador no ha dejado copiar. Prueba otra vez con un clic.', true);
+      return ok;
+    }
+  }
+  async function copiarImagen(blob) {
+    try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); return true; }
+    catch (err) { toast('No se pudo copiar la imagen: ' + (err.message || err), true); return false; }
+  }
+
+  $('#btnTexto').onclick = async () => {
+    const html = cabHTML(proc) + proc.entradas.map(entradaHTML).join('');
+    const txt = cabTXT(proc) + proc.entradas.map(entradaTXT).join('');
+    if (await copiarHTML(html, txt)) toast('Texto copiado (sin capturas)');
+  };
+  $('#btnTodo').onclick = async () => {
+    $('#estado').textContent = 'Preparando…';
+    let html = cabHTML(proc); for (const e of proc.entradas) html += await entradaHTMLconImgs(e);
+    const txt = cabTXT(proc) + proc.entradas.map(entradaTXT).join('');
+    if (await copiarHTML(html, txt)) toast('Copiado todo. Si Confluence no pega las capturas, usa «Pegado paso a paso».');
+    $('#estado').textContent = 'Guardado en este navegador ✓';
+  };
+
+  /* ---------- pegado paso a paso ---------- */
+  let pasos = [], idx = 0;
+  function construirPasos() {
+    const out = []; let html = cabHTML(proc), txt = cabTXT(proc), nombres = ['Cabecera'];
+    const flush = () => { if (html) out.push({ tipo: 'texto', label: 'Texto: ' + nombres.join(', '), html, txt }); html = ''; txt = ''; nombres = []; };
+    for (const e of proc.entradas) {
+      html += entradaHTML(e); txt += entradaTXT(e); nombres.push(`«${e.titulo || 'sin título'}»`);
+      e.imgs.forEach((im, k) => {
+        flush();
+        out.push({ tipo: 'imagen', label: `Captura ${e.imgs.length > 1 ? (k + 1) + '/' + e.imgs.length + ' ' : ''}de «${e.titulo || 'sin título'}»`, blob: im.blob, im });
+      });
+    }
+    flush();
+    return out;
+  }
+  function renderPasos() {
+    const n = pasos.length, b = $('#btnSig');
+    b.textContent = idx < n ? `📋 Copiar paso ${idx + 1} de ${n}: ${pasos[idx].label}` : '✓ Terminado — cerrar';
+    const prev = $('#pasoPrev');
+    prev.innerHTML = (idx < n && pasos[idx].tipo === 'imagen') ? `<img src="${imgURL(pasos[idx].im)}" alt="Siguiente captura">` : '';
+    const ol = $('#pasosLista'); ol.innerHTML = '';
+    pasos.forEach((p, k) => {
+      const li = document.createElement('li'); li.textContent = p.label;
+      li.className = (p.hecho ? 'hecho ' : '') + (k === idx ? 'actual' : '');
+      li.onclick = () => { idx = k; $('#pasoMsg').textContent = ''; renderPasos(); b.focus(); };
+      ol.appendChild(li);
+    });
+    ol.querySelector('.actual')?.scrollIntoView({ block: 'nearest' });
+  }
+  $('#btnPaso').onclick = () => {
+    if (saveT) guardarYa();
+    pasos = construirPasos(); idx = 0; $('#pasoMsg').textContent = '';
+    renderPasos(); $('#dlgPaso').showModal(); $('#btnSig').focus();
+  };
+  $('#btnSig').onclick = async () => {
+    if (idx >= pasos.length) { $('#dlgPaso').close(); return; }
+    const p = pasos[idx];
+    const ok = p.tipo === 'imagen' ? await copiarImagen(p.blob) : await copiarHTML(p.html, p.txt);
+    if (!ok) return;
+    p.hecho = true;
+    $('#pasoMsg').textContent = `Paso ${idx + 1} copiado → pégalo en Confluence (Ctrl+V) y vuelve aquí`;
+    idx++; renderPasos(); $('#btnSig').focus();
+  };
+  $('#btnAnt').onclick = () => { if (idx > 0) { idx--; $('#pasoMsg').textContent = ''; renderPasos(); $('#btnSig').focus(); } };
+  $('#btnReini').onclick = () => { pasos.forEach(p => p.hecho = false); idx = 0; $('#pasoMsg').textContent = ''; renderPasos(); $('#btnSig').focus(); };
+
+  /* ---------- borrar / exportar / importar ---------- */
+  $('#btnBorrar').onclick = async () => {
+    if (!confirm(`¿Borrar el proceso «${proc.nombre || 'sin nombre'}» con todas sus capturas?`)) return;
+    clearTimeout(saveT); saveT = null;
+    if (db) { try { await req(store('readwrite').delete(proc.id)); } catch (e) {} }
+    todos = todos.filter(p => p !== proc);
+    const sig = [...todos].sort((a, b) => b.actualizado - a.actualizado)[0];
+    if (sig) { proc = sig; renderProc(); } else nuevoProceso();
+    toast('Proceso borrado');
+  };
+  $('#btnExport').onclick = async () => {
+    if (saveT) await guardarYa();
+    const out = { app: 'registro-cambios', version: 1, exportado: new Date().toISOString(), procesos: [] };
+    for (const p of todos) {
+      const q = { ...p, entradas: [] };
+      for (const e of p.entradas) q.entradas.push({ ...e, imgs: await Promise.all(e.imgs.map(async im => ({ iid: im.iid, data: await blobToDataURL(im.blob) }))) });
+      out.procesos.push(q);
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: 'application/json' }));
+    a.download = `registro-cambios_${hoy().replace(/-/g, '')}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    toast(`Exportados ${todos.length} proceso(s)`);
+  };
+  $('#fileImport').onchange = async ev => {
+    const f = ev.target.files[0]; ev.target.value = ''; if (!f) return;
+    try {
+      const data = JSON.parse(await f.text()); if (!Array.isArray(data.procesos)) throw new Error('formato no reconocido');
+      for (const q of data.procesos) {
+        for (const e of q.entradas) e.imgs = await Promise.all((e.imgs || []).map(async im => ({ iid: im.iid || uid(), blob: await dataURLToBlob(im.data) })));
+        if (db) await req(store('readwrite').put(q));
+        const i = todos.findIndex(p => p.id === q.id); if (i >= 0) todos[i] = q; else todos.push(q);
+        if (proc && proc.id === q.id) proc = q;
+      }
+      renderProc(); toast(`Importados ${data.procesos.length} proceso(s)`);
+    } catch (err) { toast('No se pudo importar: ' + err.message, true); }
+  };
+
+  /* ---------- arranque ---------- */
+  try { db = await openDB(); todos = await req(store('readonly').getAll()); }
+  catch (e) { db = null; toast('Este navegador no deja guardar: exporta antes de cerrar', true); }
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+  let ultimo = null; try { ultimo = localStorage.getItem('rc-ultimo'); } catch (e) {}
+  proc = todos.find(p => p.id === ultimo) || [...todos].sort((a, b) => b.actualizado - a.actualizado)[0];
+  if (proc) { renderProc(); $('#estado').textContent = 'Guardado en este navegador ✓'; } else nuevoProceso();
+})();
+</script>
+</body>
+</html>
