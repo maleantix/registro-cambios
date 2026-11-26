@@ -128,6 +128,7 @@ label.auto input{width:auto;margin-top:2px}
 .inicio-btns{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap}
 .inicio-btns .big{width:auto;min-width:230px}
 body.sin-registro #editor,body.sin-registro .bar{display:none}
+header .actions button.actual{background:#fff3e3;border-color:var(--ac);font-weight:700}
 #prod{display:none}
 body.en-prod #prod{display:block}
 body.en-prod #inicio,body.en-prod #editor,body.en-prod .bar{display:none}
@@ -140,7 +141,8 @@ body.en-prod aside{display:none}
 #prodTabla td.c-tar select{min-width:170px;max-width:190px}
 #prodTabla td.c-con input{min-width:150px}
 #prodTabla th{text-align:left;font-size:13px;color:var(--mut);padding:4px 6px;font-weight:600;white-space:nowrap}
-#prodTabla td{padding:3px 4px;vertical-align:middle}
+#prodTabla td{padding:9px 10px 9px 0;vertical-align:middle;border-bottom:1px solid var(--bd)}
+#prodTabla th{padding-bottom:8px}
 #prodTabla input,#prodTabla select{padding:6px 7px;font-size:15px}
 #prodTabla td.c-min input{width:70px;text-align:right}
 .cp{display:flex;gap:2px;align-items:center}.cp button{padding:4px 6px;font-size:13px;flex:0 0 auto}
@@ -148,9 +150,9 @@ body.en-prod aside{display:none}
 #prodTabla td.c-cod input{width:120px}
 #prodTabla td.c-id input{width:130px}
 #prodTabla td.c-url input{width:120px}
-#prodTabla td.c-acc{white-space:normal;width:200px;min-width:200px}#prodTabla td.c-acc button{margin:1px}
+#prodTabla td.c-acc{white-space:nowrap;width:1%}#prodTabla td.c-acc button{margin:0 0 0 6px}#prodTabla td.c-acc button.ico{width:36px;padding:6px 0;text-align:center}.ico-vacio{display:inline-block;width:36px;margin-left:6px}
 #prodTabla td.c-acc button{padding:5px 8px}
-.ptotal{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:14px 0;padding:12px 14px;border:1px solid var(--bd);border-radius:10px;background:#fff;font-size:16px}
+.ptotal{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:6px 0 16px;padding:12px 14px;border:1px solid var(--bd);border-radius:10px;background:#fff;font-size:16px}
 .ptotal label{display:flex;gap:6px;align-items:center;margin:0}
 .ptotal label input{width:82px;margin:0}
 .pestado{font-weight:700;padding:5px 11px;border-radius:8px;border:2px solid}
@@ -242,6 +244,7 @@ button:disabled{opacity:.55;cursor:wait}
   <h1 id="irInicio" title="Ir al inicio">Registro de cambios</h1>
   <div class="actions">
     <button id="btnNuevo" class="primary">+ Nuevo proceso</button>
+    <button id="btnProc" title="Lista de procesos, buscador y registros por fecha">📁 Procesos</button>
     <button id="btnProd" title="Tu registro diario de tareas y minutos (Productividad)">📊 Productividad</button>
     <button id="btnNube" title="Ver y abrir los registros guardados en tu hoja de Google">☁ Guardados en Google</button>
     <button id="btnExport" title="Descarga una copia de seguridad de todos los procesos">Exportar</button>
@@ -269,7 +272,6 @@ button:disabled{opacity:.55;cursor:wait}
 
     <section id="prod" class="card">
       <div class="phead">
-        <button id="pdInicio" title="Vuelve al inicio, con tus procesos">← Inicio</button>
         <h2>📊 Productividad</h2>
         <button id="pdAnt" title="Día anterior">◀</button>
         <input type="date" id="pdFecha">
@@ -282,6 +284,11 @@ button:disabled{opacity:.55;cursor:wait}
         <button id="pdSubir" title="Guarda este día en Google ahora mismo">☁ Guardar ahora</button>
         <span id="pdEstadoNube" class="ayuda"></span>
       </div>
+      <div class="ptotal">
+        <span>Total: <b id="pdTotal">0</b> min = <b id="pdHoras">0</b> h</span>
+        <label>Jornada de este día <input type="number" id="pdJornada" min="0" step="5"> min</label>
+        <span id="pdAviso" class="pestado ok"></span>
+      </div>
       <table id="prodTabla">
         <thead><tr><th>Tarea</th><th>ID</th><th>Contenido</th><th>Código</th><th>Url (Confluence)</th><th>Inicio</th><th>Minutos</th><th></th></tr></thead>
         <tbody id="prodFilas"></tbody>
@@ -289,11 +296,6 @@ button:disabled{opacity:.55;cursor:wait}
       <div class="padd">
         <button id="pdAddFila">+ Fila</button>
         <button id="pdAddDescanso" title="Añade «Descanso» con 60 minutos">+ Descanso (60 min)</button>
-      </div>
-      <div class="ptotal">
-        <span>Total: <b id="pdTotal">0</b> min = <b id="pdHoras">0</b> h</span>
-        <label>Jornada de este día <input type="number" id="pdJornada" min="0" step="5"> min</label>
-        <span id="pdAviso" class="pestado ok"></span>
       </div>
       <p class="pnota">Al pulsar «⏱ Generar código» en un proceso, la fila de hoy se crea sola con el ID, el nombre, el código y la hora de inicio. Tú solo apuntas los minutos. Los viernes la jornada empieza en 420 min (7 h); puedes cambiarla en cualquier día.</p>
       <h3 style="margin:18px 0 4px;font-size:16px">Últimos días</h3>
@@ -454,10 +456,11 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>📊 Productividad</dt><dd>Tu registro diario: tarea (desplegable), ID, contenido, código, url de Confluence, inicio y minutos. Abajo ves el total, las horas y si <b>faltan (▼) o sobran (▲)</b> minutos para la jornada. Se guarda solo y, si has entrado, también en Google (hoja «Productividad»).</dd>
       <dt>Jornada</dt><dd>480 min (8 h) por defecto y 420 min (7 h) los viernes; se puede cambiar en cada día.</dd>
       <dt>📊 Añadir a productividad</dt><dd>En el proceso (junto a Copiar ID): pones el día (hoy por defecto), la tarea y los minutos y se apunta la fila con el nombre, ID y código del proceso. Si ya lo habías apuntado ese día, la actualiza.</dd>
-      <dt>← Inicio (en Productividad)</dt><dd>Sales de Productividad y vuelves al inicio, con la lista de procesos, el buscador y los botones Añadir/Buscar proceso.</dd>
+      <dt>📁 Procesos / 📊 Productividad (arriba)</dt><dd>Siempre visibles, para cambiar de una pantalla a otra. El que está resaltado es en el que estás. «Procesos» te lleva al inicio, con la lista, el buscador y los botones Añadir/Buscar proceso.</dd>
       <dt>Guardado de Productividad</dt><dd>Es automático: queda en el navegador al instante y en Google a los 2 segundos de tu último cambio. Arriba a la derecha pone si ya está guardado; <b>☁ Guardar ahora</b> lo fuerza.</dd>
       <dt>↩ Volver al proceso</dt><dd>En Productividad, te devuelve al proceso que tenías abierto sin perder nada. Así vas y vienes para copiar.</dd>
-      <dt>📋 junto a cada campo</dt><dd>En cada fila de Productividad: copia ese campo (ID, contenido, código, url, inicio o minutos). <b>📋 Fila</b> copia toda la fila separada por tabuladores para pegarla de golpe en otro Excel.</dd>
+      <dt>Copiar fila</dt><dd>Copia la fila entera (ver abajo). Los iconos ⤓ (completar minutos), ↗ (abrir el proceso) y ✕ (quitar) están al final de cada fila.</dd>
+      <dt>📋 junto a cada campo</dt><dd>En cada fila de Productividad: copia ese campo (ID, contenido, código, url, inicio o minutos). <b>Copiar fila</b> copia toda la fila separada por tabuladores para pegarla de golpe en otro Excel.</dd>
       <dt>Código a mano</dt><dd>El campo «Código de trabajo» del proceso y el de cada fila de Productividad se pueden escribir o cambiar a mano. Si lo cambias en el proceso, se actualiza en la fila que creó.</dd>
       <dt>Editar o quitar filas</dt><dd>Todos los campos de cada fila se pueden modificar y la ✕ la quita (pide confirmación). Cada día se puede abrir con ◀ ▶ o el calendario.</dd>
       <dt>⬇ Exportar Excel</dt><dd>Descarga un .xlsx con el mismo formato que tu Excel (Día, Tarea, ID, Contenido, Código, Url, Inicio, Tiempo parcial, Minutos Totales, Horas Empleadas) para el periodo que elijas, o todo el histórico. También hay CSV.</dd>
@@ -1438,10 +1441,10 @@ button:disabled{opacity:.55;cursor:wait}
       <td class="c-ini">${cp('inicio', f, `<input data-k="inicio" type="time" value="${esc(f.inicio)}">`)}</td>
       <td class="c-min">${cp('min', f, `<input data-k="min" type="number" min="0" step="1" value="${esc(f.min)}">`)}</td>
       <td class="c-acc">
-        <button data-pa="fila" title="Copiar toda la fila (Día, Tarea, ID, Contenido, Código, Url, Inicio, Minutos) para pegarla en Excel">📋 Fila</button>
-        <button data-pa="completar" title="Completar: pone los minutos que faltan para llegar a la jornada">⤓ Completar</button>
-        ${f.procId && todos.some(p => p.id === f.procId) ? '<button data-pa="abrir" title="Abrir el registro de este proceso">↗ Proceso</button>' : ''}
-        <button data-pa="borrar" title="Quitar fila">✕</button>
+        <button data-pa="fila" title="Copiar toda la fila (Día, Tarea, ID, Contenido, Código, Url, Inicio, Minutos) para pegarla en Excel">Copiar fila</button>
+        <button data-pa="completar" class="ico" title="Completar: pone los minutos que faltan para llegar a la jornada">⤓</button>
+        ${f.procId && todos.some(p => p.id === f.procId) ? '<button data-pa="abrir" class="ico" title="Abrir el registro de este proceso">↗</button>' : '<span class="ico-vacio"></span>'}
+        <button data-pa="borrar" class="ico" title="Quitar fila">✕</button>
       </td></tr>`).join('') || '<tr><td colspan="8" class="ayuda" style="padding:14px 6px">No hay filas este día. Pulsa «+ Fila» o genera un código en un proceso.</td></tr>';
     pintarTotales(); pintarNubeDia(d); pintarResumen();
   }
@@ -1457,14 +1460,21 @@ button:disabled{opacity:.55;cursor:wait}
   async function abrirProductividad() {
     if (saveT) await guardarYa();
     document.body.classList.add('en-prod');
-    const v = $('#pdVolver'); v.style.display = proc ? '' : 'none'; if (proc) v.textContent = '↩ Volver a «' + (proc.nombre || 'proceso sin nombre') + '»';
+    const v = $('#pdVolver'); v.style.display = proc ? '' : 'none'; if (proc) { v.textContent = '↩ Volver al proceso'; v.title = 'Volver a «' + (proc.nombre || 'proceso sin nombre') + '»'; }
     window.scrollTo(0, 0);
     await abrirDia(hoy());
     await traerDiasNube();
     await abrirDia(dia.id);
   }
   const moverDia = n => { const d = new Date(dia.id + 'T12:00:00'); d.setDate(d.getDate() + n); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
-  $('#btnProd').onclick = abrirProductividad;
+  const salirProd = async () => { document.body.classList.remove('en-prod'); if (proc) await irInicio(); window.scrollTo(0, 0); };
+  $('#btnProd').onclick = () => { if (!document.body.classList.contains('en-prod')) abrirProductividad(); };
+  $('#btnProc').onclick = () => salirProd();
+  new MutationObserver(() => {
+    const en = document.body.classList.contains('en-prod');
+    $('#btnProd').classList.toggle('actual', en); $('#btnProc').classList.toggle('actual', !en);
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  $('#btnProc').classList.add('actual');
   $('#btnInicioProd').onclick = abrirProductividad;
   $('#pdAnt').onclick = () => abrirDia(moverDia(-1));
   $('#pdSig').onclick = () => abrirDia(moverDia(1));
@@ -1474,7 +1484,6 @@ button:disabled{opacity:.55;cursor:wait}
     if (!logueado()) { toast('Entra con tu usuario para guardar en Google', true); return; }
     clearTimeout(pdSaveT); await subirDia(dia); toast('Día guardado en Google ✓');
   };
-  $('#pdInicio').onclick = async () => { document.body.classList.remove('en-prod'); if (proc) await irInicio(); window.scrollTo(0, 0); };
   $('#pdFecha').onchange = ev => { if (ev.target.value) abrirDia(ev.target.value); };
   $('#pdAddFila').onclick = async () => { dia.filas.push(nuevaFila({ tarea: 'BBDD' })); await escribirDia(dia); pintarDia(); $('#prodFilas').querySelector('tr:last-child [data-k=pid]').focus(); };
   $('#pdAddDescanso').onclick = async () => { dia.filas.push(nuevaFila({ tarea: 'Descanso', min: 60 })); await escribirDia(dia); pintarDia(); };
