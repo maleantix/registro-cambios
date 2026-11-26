@@ -137,17 +137,18 @@ body.en-prod #inicio,body.en-prod #editor,body.en-prod .bar{display:none}
 body.en-prod .layout{grid-template-columns:1fr;max-width:1500px}
 body.en-prod aside{display:none}
 #prodTabla{width:100%;border-collapse:collapse;font-size:15px}
-#prodTabla td.c-tar select{min-width:200px}
-#prodTabla td.c-con input{min-width:260px}
+#prodTabla td.c-tar select{min-width:170px;max-width:190px}
+#prodTabla td.c-con input{min-width:150px}
 #prodTabla th{text-align:left;font-size:13px;color:var(--mut);padding:4px 6px;font-weight:600;white-space:nowrap}
 #prodTabla td{padding:3px 4px;vertical-align:middle}
 #prodTabla input,#prodTabla select{padding:6px 7px;font-size:15px}
-#prodTabla td.c-min input{width:78px;text-align:right}
-#prodTabla td.c-ini input{width:96px}
-#prodTabla td.c-cod input{width:128px}
-#prodTabla td.c-id input{width:150px}
-#prodTabla td.c-url input{width:150px}
-#prodTabla td.c-acc{white-space:nowrap}
+#prodTabla td.c-min input{width:70px;text-align:right}
+.cp{display:flex;gap:2px;align-items:center}.cp button{padding:4px 6px;font-size:13px;flex:0 0 auto}
+#prodTabla td.c-ini input{width:92px}
+#prodTabla td.c-cod input{width:120px}
+#prodTabla td.c-id input{width:130px}
+#prodTabla td.c-url input{width:120px}
+#prodTabla td.c-acc{white-space:normal;width:200px;min-width:200px}#prodTabla td.c-acc button{margin:1px}
 #prodTabla td.c-acc button{padding:5px 8px}
 .ptotal{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:14px 0;padding:12px 14px;border:1px solid var(--bd);border-radius:10px;background:#fff;font-size:16px}
 .ptotal label{display:flex;gap:6px;align-items:center;margin:0}
@@ -273,7 +274,9 @@ button:disabled{opacity:.55;cursor:wait}
         <input type="date" id="pdFecha">
         <button id="pdSig" title="Día siguiente">▶</button>
         <button id="pdHoy">Hoy</button>
+        <button id="pdVolver" class="primary" style="display:none">↩ Volver al proceso</button>
         <button id="pdInicio">← Inicio</button>
+        <button id="pdExport" title="Descarga tus días en un Excel como el que tenías">⬇ Exportar Excel</button>
         <span id="pdDiaSem" class="ayuda"></span>
         <span style="flex:1"></span>
         <span id="pdEstadoNube" class="ayuda"></span>
@@ -311,7 +314,7 @@ button:disabled{opacity:.55;cursor:wait}
         <button id="btnCopiarCodigo" title="Copia solo el código">📋 Copiar código</button>
       </div>
       <label>Notas generales (opcional)<textarea id="pNotas" data-p="notas" rows="2" placeholder="Motivo del cambio, petición, etc."></textarea></label>
-      <div class="procfoot"><button id="btnCopiarNomId" title="Copia «Nombre-ID» para ponerlo entre los corchetes de Publicar/modificar [ ] en Confluence">📋 Copiar nombre-ID</button><button id="btnCopiarNom" title="Copia solo el nombre del proceso">📋 Nombre</button><button id="btnCopiarId" title="Copia solo el ID del proceso">📋 ID</button></div>
+      <div class="procfoot"><button id="btnCopiarNomId" title="Copia «Nombre-ID» para ponerlo entre los corchetes de Publicar/modificar [ ] en Confluence">📋 Copiar nombre-ID</button><button id="btnCopiarNom" title="Copia solo el nombre del proceso">📋 Nombre</button><button id="btnCopiarId" title="Copia solo el ID del proceso">📋 ID</button><span style="flex:1"></span><button id="btnAddProd" class="primary" title="Apunta este proceso en tu Productividad (hoy u otro día) con sus minutos">📊 Añadir a productividad</button></div>
     </section>
 
     <div id="estructura"></div>
@@ -363,6 +366,36 @@ button:disabled{opacity:.55;cursor:wait}
   <input id="nBuscar" placeholder="Buscar por proceso o ID…" style="margin-top:10px">
   <ul id="nLista"></ul>
   <div id="nubeMsg"></div>
+</dialog>
+
+<dialog id="dlgAddProd">
+  <div class="dhead"><h2>📊 Añadir a productividad</h2><button data-close title="Cerrar">✕</button></div>
+  <form id="formAddProd">
+    <p id="apProc" style="margin:0 0 8px;font-weight:600"></p>
+    <div class="row">
+      <label>Día<input type="date" id="apDia"></label>
+      <label>Tarea<select id="apTarea"></select></label>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label>Minutos<input type="number" id="apMin" min="0" step="1" placeholder="Ej.: 145"></label>
+      <label>Hora de inicio (opcional)<input type="time" id="apIni"></label>
+    </div>
+    <label style="margin-top:8px">Url de Confluence (opcional)<input id="apUrl" placeholder="https://…"></label>
+    <p class="ayuda" id="apInfo" style="margin-top:8px"></p>
+    <div class="dfoot"><button type="button" id="apVer">Añadir y ver Productividad</button><button class="primary" type="submit">Añadir</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgExpProd">
+  <div class="dhead"><h2>⬇ Exportar Productividad</h2><button data-close title="Cerrar">✕</button></div>
+  <form id="formExpProd">
+    <div class="row">
+      <label>Desde<input type="date" id="epDesde"></label>
+      <label>Hasta<input type="date" id="epHasta"></label>
+    </div>
+    <p class="ayuda" id="epInfo" style="margin-top:8px"></p>
+    <div class="dfoot"><button type="button" id="epTodo">Todo el histórico</button><span style="flex:1"></span><button type="button" id="epCsv">CSV</button><button class="primary" type="submit">⬇ Excel (.xlsx)</button></div>
+  </form>
 </dialog>
 
 <dialog id="dlgConfig">
@@ -419,6 +452,12 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>📋 Copiar código</dt><dd>Copia solo el código del proceso.</dd>
       <dt>📊 Productividad</dt><dd>Tu registro diario: tarea (desplegable), ID, contenido, código, url de Confluence, inicio y minutos. Abajo ves el total, las horas y si <b>faltan (▼) o sobran (▲)</b> minutos para la jornada. Se guarda solo y, si has entrado, también en Google (hoja «Productividad»).</dd>
       <dt>Jornada</dt><dd>480 min (8 h) por defecto y 420 min (7 h) los viernes; se puede cambiar en cada día.</dd>
+      <dt>📊 Añadir a productividad</dt><dd>En el proceso (junto a Copiar ID): pones el día (hoy por defecto), la tarea y los minutos y se apunta la fila con el nombre, ID y código del proceso. Si ya lo habías apuntado ese día, la actualiza.</dd>
+      <dt>↩ Volver al proceso</dt><dd>En Productividad, te devuelve al proceso que tenías abierto sin perder nada. Así vas y vienes para copiar.</dd>
+      <dt>📋 junto a cada campo</dt><dd>En cada fila de Productividad: copia ese campo (ID, contenido, código, url, inicio o minutos). <b>📋 Fila</b> copia toda la fila separada por tabuladores para pegarla de golpe en otro Excel.</dd>
+      <dt>Código a mano</dt><dd>El campo «Código de trabajo» del proceso y el de cada fila de Productividad se pueden escribir o cambiar a mano. Si lo cambias en el proceso, se actualiza en la fila que creó.</dd>
+      <dt>Editar o quitar filas</dt><dd>Todos los campos de cada fila se pueden modificar y la ✕ la quita (pide confirmación). Cada día se puede abrir con ◀ ▶ o el calendario.</dd>
+      <dt>⬇ Exportar Excel</dt><dd>Descarga un .xlsx con el mismo formato que tu Excel (Día, Tarea, ID, Contenido, Código, Url, Inicio, Tiempo parcial, Minutos Totales, Horas Empleadas) para el periodo que elijas, o todo el histórico. También hay CSV.</dd>
       <dt>⤓ Completar</dt><dd>Pone en esa fila los minutos que faltan para llegar a la jornada (como tu fila de relleno).</dd>
       <dt>+ Descanso (60 min)</dt><dd>Añade la fila de descanso.</dd>
       <dt>↗</dt><dd>Abre el registro del proceso al que pertenece la fila.</dd>
@@ -1386,18 +1425,19 @@ button:disabled{opacity:.55;cursor:wait}
     const d = dia, tb = $('#prodFilas');
     $('#pdFecha').value = d.id;
     $('#pdDiaSem').textContent = DIAS_SEM[new Date(d.id + 'T12:00:00').getDay()];
+    const cp = (k, f, inner) => `<div class="cp">${inner}<button data-pa="cp" data-k="${k}" title="Copiar">📋</button></div>`;
     tb.innerHTML = d.filas.map(f => `<tr data-rid="${f.rid}">
       <td class="c-tar"><select data-k="tarea">${(TAREAS.includes(f.tarea) || !f.tarea ? TAREAS : TAREAS.concat([f.tarea])).map(t => `<option${t === f.tarea ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select></td>
-      <td class="c-id"><input data-k="pid" value="${esc(f.pid)}" placeholder="ID"></td>
-      <td class="c-con"><input data-k="contenido" value="${esc(f.contenido)}" placeholder="Nombre del contenido"></td>
-      <td class="c-cod"><input data-k="codigo" value="${esc(f.codigo)}" placeholder="ddmmaaHHMM"></td>
-      <td class="c-url"><input data-k="url" value="${esc(f.url)}" placeholder="https://…"></td>
-      <td class="c-ini"><input data-k="inicio" type="time" value="${esc(f.inicio)}"></td>
-      <td class="c-min"><input data-k="min" type="number" min="0" step="1" value="${esc(f.min)}"></td>
+      <td class="c-id">${cp('pid', f, `<input data-k="pid" value="${esc(f.pid)}" placeholder="ID">`)}</td>
+      <td class="c-con">${cp('contenido', f, `<input data-k="contenido" value="${esc(f.contenido)}" placeholder="Nombre del contenido">`)}</td>
+      <td class="c-cod">${cp('codigo', f, `<input data-k="codigo" value="${esc(f.codigo)}" placeholder="ddmmaaHHMM">`)}</td>
+      <td class="c-url">${cp('url', f, `<input data-k="url" value="${esc(f.url)}" placeholder="https://…">`)}</td>
+      <td class="c-ini">${cp('inicio', f, `<input data-k="inicio" type="time" value="${esc(f.inicio)}">`)}</td>
+      <td class="c-min">${cp('min', f, `<input data-k="min" type="number" min="0" step="1" value="${esc(f.min)}">`)}</td>
       <td class="c-acc">
+        <button data-pa="fila" title="Copiar toda la fila (Día, Tarea, ID, Contenido, Código, Url, Inicio, Minutos) para pegarla en Excel">📋 Fila</button>
         <button data-pa="completar" title="Completar: pone los minutos que faltan para llegar a la jornada">⤓ Completar</button>
-        <button data-pa="cod" title="Copiar código">📋</button>
-        ${f.procId && todos.some(p => p.id === f.procId) ? '<button data-pa="abrir" title="Abrir el registro de este proceso">↗</button>' : ''}
+        ${f.procId && todos.some(p => p.id === f.procId) ? '<button data-pa="abrir" title="Abrir el registro de este proceso">↗ Proceso</button>' : ''}
         <button data-pa="borrar" title="Quitar fila">✕</button>
       </td></tr>`).join('') || '<tr><td colspan="8" class="ayuda" style="padding:14px 6px">No hay filas este día. Pulsa «+ Fila» o genera un código en un proceso.</td></tr>';
     pintarTotales(); pintarNubeDia(d); pintarResumen();
@@ -1413,8 +1453,8 @@ button:disabled{opacity:.55;cursor:wait}
   async function abrirDia(iso) { dia = await leerDia(iso); pintarDia(); }
   async function abrirProductividad() {
     if (saveT) await guardarYa();
-    if (proc) await irInicio();
     document.body.classList.add('en-prod');
+    const v = $('#pdVolver'); v.style.display = proc ? '' : 'none'; if (proc) v.textContent = '↩ Volver a «' + (proc.nombre || 'proceso sin nombre') + '»';
     window.scrollTo(0, 0);
     await abrirDia(hoy());
     await traerDiasNube();
@@ -1426,7 +1466,8 @@ button:disabled{opacity:.55;cursor:wait}
   $('#pdAnt').onclick = () => abrirDia(moverDia(-1));
   $('#pdSig').onclick = () => abrirDia(moverDia(1));
   $('#pdHoy').onclick = () => abrirDia(hoy());
-  $('#pdInicio').onclick = () => { document.body.classList.remove('en-prod'); window.scrollTo(0, 0); };
+  $('#pdVolver').onclick = () => { document.body.classList.remove('en-prod'); window.scrollTo(0, 0); };
+  $('#pdInicio').onclick = async () => { document.body.classList.remove('en-prod'); if (proc) await irInicio(); window.scrollTo(0, 0); };
   $('#pdFecha').onchange = ev => { if (ev.target.value) abrirDia(ev.target.value); };
   $('#pdAddFila').onclick = async () => { dia.filas.push(nuevaFila({ tarea: 'BBDD' })); await escribirDia(dia); pintarDia(); $('#prodFilas').querySelector('tr:last-child [data-k=pid]').focus(); };
   $('#pdAddDescanso').onclick = async () => { dia.filas.push(nuevaFila({ tarea: 'Descanso', min: 60 })); await escribirDia(dia); pintarDia(); };
@@ -1441,18 +1482,149 @@ button:disabled{opacity:.55;cursor:wait}
     const b = ev.target.closest('[data-pa]'); if (!b) return;
     const f = dia.filas.find(x => x.rid === b.closest('tr').dataset.rid); if (!f) return;
     const a = b.dataset.pa;
-    if (a === 'borrar') { dia.filas = dia.filas.filter(x => x !== f); await escribirDia(dia); pintarDia(); }
+    if (a === 'borrar') { if ((f.pid || f.contenido || f.codigo || f.min) && !confirm('¿Quitar esta fila de ' + fmtFecha(dia.id) + '?\n' + [f.tarea, f.contenido, f.min ? f.min + ' min' : ''].filter(Boolean).join(' · '))) return; dia.filas = dia.filas.filter(x => x !== f); await escribirDia(dia); pintarDia(); }
     else if (a === 'completar') {
       const otros = dia.filas.filter(x => x !== f).reduce((s, x) => s + (Number(x.min) || 0), 0);
       f.min = Math.max(0, (Number(dia.jornada) || 0) - otros); await escribirDia(dia); pintarDia();
     }
-    else if (a === 'cod') {
-      if (!f.codigo) { toast('Esta fila no tiene código', true); return; }
-      try { await navigator.clipboard.writeText(f.codigo); toast('Código ' + f.codigo + ' copiado ✓'); } catch (e) { toast('No se pudo copiar', true); }
+    else if (a === 'cp') {
+      const k = b.dataset.k, v = String(f[k] ?? '');
+      if (!v) { toast('Ese campo está vacío', true); return; }
+      try { await navigator.clipboard.writeText(v); toast('Copiado: ' + (v.length > 50 ? v.slice(0, 50) + '…' : v)); } catch (e) { toast('No se pudo copiar', true); }
+    }
+    else if (a === 'fila') {
+      const t = [fmtFecha(dia.id), f.tarea, f.pid, f.contenido, f.codigo, f.url, f.inicio, f.min].map(x => String(x ?? '').replace(/[\t\r\n]+/g, ' ')).join('\t');
+      try { await navigator.clipboard.writeText(t); toast('Fila copiada: pégala en Excel ✓'); } catch (e) { toast('No se pudo copiar', true); }
     }
     else if (a === 'abrir') { const p = todos.find(x => x.id === f.procId); if (p) await abrirRegistro(p, 'lectura'); }
   });
   $('#prodResumen').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-dia]'); if (tr) { abrirDia(tr.dataset.dia); window.scrollTo(0, 0); } });
+
+
+  /* ---- exportar a Excel (.xlsx) o CSV ---- */
+  const crcT = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = crcT[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function zipStore(files) {
+    const enc = new TextEncoder(), parts = [], cd = []; let off = 0;
+    const u16 = n => [n & 255, (n >> 8) & 255], u32 = n => [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255];
+    for (const [name, text] of files) {
+      const nb = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+      const lh = Uint8Array.from([0x50, 0x4b, 3, 4, ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nb.length), ...u16(0)]);
+      parts.push(lh, nb, data);
+      cd.push(Uint8Array.from([0x50, 0x4b, 1, 2, ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nb.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(off)]), nb);
+      off += lh.length + nb.length + data.length;
+    }
+    const cdLen = cd.reduce((a, x) => a + x.length, 0);
+    const end = Uint8Array.from([0x50, 0x4b, 5, 6, ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length), ...u32(cdLen), ...u32(off), ...u16(0)]);
+    return new Blob([...parts, ...cd, end], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+  const xe = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
+  const serial = iso => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d) / 864e5 + 25569; };
+  const CABS = ['Día ', 'Tarea', 'ID', 'Contenido', 'Código', 'Url', 'Inicio', 'Tiempo parcial minutos', 'Minutos Totales', 'Horas Empleadas', 'Jornada del día (min)'];
+  const COL = i => String.fromCharCode(65 + i);
+  function xlsxProd(dias) {
+    const filas = [];
+    const cel = (c, r, v, st, tipo) => v === '' || v == null ? '' : tipo === 'n' ? `<c r="${COL(c)}${r}"${st ? ` s="${st}"` : ''}><v>${v}</v></c>` : `<c r="${COL(c)}${r}"${st ? ` s="${st}"` : ''} t="inlineStr"><is><t xml:space="preserve">${xe(v)}</t></is></c>`;
+    filas.push(`<row r="1">${CABS.map((h, i) => cel(i, 1, h, 3)).join('')}</row>`);
+    let r = 2;
+    for (const d of dias) {
+      const ini = r, tot = sumaMin(d);
+      d.filas.forEach((f, k) => {
+        const hm = /^(\d{1,2}):(\d{2})/.exec(f.inicio || '');
+        const m = f.min === '' || f.min == null ? '' : Number(f.min);
+        let extra = '';
+        if (k === d.filas.length - 1) extra = `<c r="J${r}" s="4"><f>SUM(I${ini}:I${r})/60</f><v>${tot / 60}</v></c>` + cel(10, r, Number(d.jornada) || 0, 0, 'n');
+        filas.push(`<row r="${r}">` + cel(0, r, serial(d.id), 1, 'n') + cel(1, r, f.tarea) + cel(2, r, f.pid) + cel(3, r, f.contenido) + cel(4, r, f.codigo) + cel(5, r, f.url)
+          + (hm ? cel(6, r, (Number(hm[1]) * 60 + Number(hm[2])) / 1440, 2, 'n') : '') + cel(8, r, m, 0, 'n') + extra + '</row>');
+        r++;
+      });
+    }
+    const W = [11, 34, 44, 60, 14, 40, 8, 12, 12, 12, 14];
+    const hoja = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${W.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${filas.join('')}</sheetData></worksheet>`;
+    const estilos = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="20" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="2" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+    return zipStore([
+      ['[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+      ['_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+      ['xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Productividad" sheetId="1" r:id="rId1"/></sheets></workbook>'],
+      ['xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+      ['xl/styles.xml', estilos],
+      ['xl/worksheets/sheet1.xml', hoja]
+    ]);
+  }
+  function csvProd(dias) {
+    const q = v => { v = String(v ?? ''); return /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    const out = [CABS.join(';')];
+    for (const d of dias) d.filas.forEach((f, k) => out.push([fmtFecha(d.id), f.tarea, f.pid, f.contenido, f.codigo, f.url, f.inicio, '', f.min, k === d.filas.length - 1 ? String(fmtH(sumaMin(d))) : '', k === d.filas.length - 1 ? d.jornada : ''].map(q).join(';')));
+    return new Blob(['﻿' + out.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  }
+  function descargar(blob, nombre) {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  async function diasParaExportar() {
+    const des = $('#epDesde').value, has = $('#epHasta').value;
+    const todosDias = db ? await req(pStore('readonly').getAll()) : [];
+    return todosDias.filter(d => d.filas && d.filas.length && (!des || d.id >= des) && (!has || d.id <= has)).sort((a, b) => a.id.localeCompare(b.id));
+  }
+  async function infoExport() {
+    const ds = await diasParaExportar(), n = ds.reduce((a, d) => a + d.filas.length, 0);
+    $('#epInfo').textContent = ds.length ? `${ds.length} día${ds.length > 1 ? 's' : ''} y ${n} fila${n > 1 ? 's' : ''} en ese periodo.` : 'No hay días anotados en ese periodo.';
+  }
+  $('#pdExport').onclick = async () => {
+    const h = hoy(); $('#epDesde').value = h.slice(0, 8) + '01'; $('#epHasta').value = h;
+    await infoExport(); $('#dlgExpProd').showModal();
+  };
+  $('#epDesde').onchange = $('#epHasta').onchange = infoExport;
+  $('#epTodo').onclick = () => { $('#epDesde').value = ''; $('#epHasta').value = ''; infoExport(); };
+  $('#formExpProd').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const ds = await diasParaExportar(); if (!ds.length) { toast('No hay nada que exportar en ese periodo', true); return; }
+    descargar(xlsxProd(ds), 'Productividad_' + ($('#epDesde').value || ds[0].id) + '_' + ($('#epHasta').value || ds[ds.length - 1].id) + '.xlsx');
+    $('#dlgExpProd').close(); toast('Excel descargado ✓');
+  });
+  $('#epCsv').onclick = async () => {
+    const ds = await diasParaExportar(); if (!ds.length) { toast('No hay nada que exportar en ese periodo', true); return; }
+    descargar(csvProd(ds), 'Productividad_' + ($('#epDesde').value || ds[0].id) + '_' + ($('#epHasta').value || ds[ds.length - 1].id) + '.csv');
+    $('#dlgExpProd').close(); toast('CSV descargado ✓');
+  };
+
+  /* ---- añadir a productividad desde el proceso ---- */
+  async function filaDeProceso(iso) {
+    const d = (dia && dia.id === iso) ? dia : await leerDia(iso);
+    const f = d.filas.find(x => x.procId === proc.id) || (proc.codigo ? d.filas.find(x => x.codigo === proc.codigo) : null);
+    return { d, f };
+  }
+  async function rellenarAddProd() {
+    const { f } = await filaDeProceso($('#apDia').value || hoy());
+    $('#apTarea').value = f ? f.tarea : 'Proceso - Modificación';
+    $('#apMin').value = f ? f.min : ''; $('#apIni').value = f ? f.inicio : ''; $('#apUrl').value = f ? f.url : '';
+    $('#apInfo').textContent = (f ? 'Este proceso ya está apuntado ese día: se actualizará esa fila. ' : 'Se creará una fila nueva. ') + (proc.codigo ? 'Código: ' + proc.codigo : 'Aún no tiene código: usa «⏱ Generar código» si lo necesitas.');
+  }
+  $('#btnAddProd').onclick = async () => {
+    if (!proc) return;
+    if (saveT) await guardarYa();
+    $('#apTarea').innerHTML = TAREAS.map(t => `<option>${esc(t)}</option>`).join('');
+    $('#apProc').textContent = (proc.nombre || 'Proceso sin nombre') + (proc.pid ? ' · ' + proc.pid : '');
+    $('#apDia').value = hoy();
+    await rellenarAddProd();
+    $('#dlgAddProd').showModal(); $('#apMin').focus();
+  };
+  $('#apDia').onchange = rellenarAddProd;
+  async function guardarAddProd(ver) {
+    const iso = $('#apDia').value || hoy();
+    const { d, f: ex } = await filaDeProceso(iso);
+    const f = ex || nuevaFila({ procId: proc.id });
+    if (!ex) d.filas.push(f);
+    f.tarea = $('#apTarea').value; f.pid = proc.pid || ''; f.contenido = proc.nombre || ''; f.codigo = proc.codigo || f.codigo || '';
+    f.procId = proc.id; f.min = $('#apMin').value; f.inicio = $('#apIni').value; f.url = $('#apUrl').value.trim();
+    await escribirDia(d);
+    $('#dlgAddProd').close();
+    toast('Apuntado en Productividad del ' + fmtFecha(iso) + ' ✓');
+    if (ver) { await abrirProductividad(); await abrirDia(iso); }
+    else if (dia && dia.id === iso) { dia = d; }
+  }
+  $('#formAddProd').addEventListener('submit', ev => { ev.preventDefault(); guardarAddProd(false); });
+  $('#apVer').onclick = () => guardarAddProd(true);
 
   // Al generar el código en un proceso: crea (o actualiza) su fila en la Productividad de hoy
   async function anotarEnProductividad(p) {
