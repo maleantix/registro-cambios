@@ -20,6 +20,7 @@ button.link:hover{text-decoration:underline;background:none}
 input,select,textarea{font:inherit;border:1px solid var(--bd);border-radius:6px;padding:7px 9px;background:#fff;color:var(--tx);width:100%}
 input:focus,select:focus,textarea:focus,.capturas:focus{outline:2px solid var(--ac);outline-offset:-1px;border-color:var(--ac)}
 textarea{resize:vertical;min-height:58px}
+.codigo-row{align-items:flex-end}.codigo-row>label{flex:0 0 190px}.codigo-row>button{flex:0 0 auto;white-space:nowrap}
 label{display:block;font-size:12px;color:var(--mut);font-weight:600}
 label input,label textarea,label select{margin-top:3px;font-weight:400}
 header{display:flex;align-items:center;gap:12px;padding:10px 18px;background:#fff;border-bottom:3px solid var(--ac);position:sticky;top:0;z-index:5}
@@ -90,6 +91,7 @@ figcaption button:first-child{flex:1}
 .vacio{color:var(--mut);font-size:13px;padding:2px 0 10px}
 .add{display:flex;gap:8px;margin:4px 0 20px;flex-wrap:wrap}
 .add button{border-style:dashed}
+.padd{display:flex;gap:8px;margin:10px 0 4px;flex-wrap:wrap}.padd button{border-style:dashed}
 .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);padding:10px 18px;display:flex;align-items:center;gap:10px;z-index:5}
 .bar #estado{flex:1;color:var(--mut);font-size:13px}
 .bar div{display:flex;gap:6px}
@@ -126,6 +128,40 @@ label.auto input{width:auto;margin-top:2px}
 .inicio-btns{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap}
 .inicio-btns .big{width:auto;min-width:230px}
 body.sin-registro #editor,body.sin-registro .bar{display:none}
+#prod{display:none}
+body.en-prod #prod{display:block}
+body.en-prod #inicio,body.en-prod #editor,body.en-prod .bar{display:none}
+#prod .phead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+#prod .phead h2{margin:0 12px 0 0;font-size:20px}
+#prod .phead input[type=date]{width:auto}
+body.en-prod .layout{grid-template-columns:1fr;max-width:1500px}
+body.en-prod aside{display:none}
+#prodTabla{width:100%;border-collapse:collapse;font-size:15px}
+#prodTabla td.c-tar select{min-width:200px}
+#prodTabla td.c-con input{min-width:260px}
+#prodTabla th{text-align:left;font-size:13px;color:var(--mut);padding:4px 6px;font-weight:600;white-space:nowrap}
+#prodTabla td{padding:3px 4px;vertical-align:middle}
+#prodTabla input,#prodTabla select{padding:6px 7px;font-size:15px}
+#prodTabla td.c-min input{width:78px;text-align:right}
+#prodTabla td.c-ini input{width:96px}
+#prodTabla td.c-cod input{width:128px}
+#prodTabla td.c-id input{width:150px}
+#prodTabla td.c-url input{width:150px}
+#prodTabla td.c-acc{white-space:nowrap}
+#prodTabla td.c-acc button{padding:5px 8px}
+.ptotal{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:14px 0;padding:12px 14px;border:1px solid var(--bd);border-radius:10px;background:#fff;font-size:16px}
+.ptotal label{display:flex;gap:6px;align-items:center;margin:0}
+.ptotal label input{width:82px;margin:0}
+.pestado{font-weight:700;padding:5px 11px;border-radius:8px;border:2px solid}
+.pestado.ok{color:#0b4f8a;border-color:#0b6cc0;background:#e8f2fc}
+.pestado.falta{color:#8a4300;border-color:#e07a00;background:#fff3e3}
+.pestado.sobra{color:#0b4f8a;border-color:#0b6cc0;background:#e8f2fc;border-style:dashed}
+#prodResumen{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+#prodResumen td,#prodResumen th{padding:5px 8px;border-bottom:1px solid var(--bd);text-align:left}
+#prodResumen tr.dia{cursor:pointer}
+#prodResumen tr.dia:hover{background:#f3f3f3}
+#prodResumen tr.hoyfila{font-weight:700}
+.pnota{color:var(--mut);font-size:13px;margin:6px 0}
 body:not(.sin-registro) #inicio{display:none}
 header h1{cursor:pointer}
 #banner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-weight:600}
@@ -205,6 +241,7 @@ button:disabled{opacity:.55;cursor:wait}
   <h1 id="irInicio" title="Ir al inicio">Registro de cambios</h1>
   <div class="actions">
     <button id="btnNuevo" class="primary">+ Nuevo proceso</button>
+    <button id="btnProd" title="Tu registro diario de tareas y minutos (Productividad)">📊 Productividad</button>
     <button id="btnNube" title="Ver y abrir los registros guardados en tu hoja de Google">☁ Guardados en Google</button>
     <button id="btnExport" title="Descarga una copia de seguridad de todos los procesos">Exportar</button>
     <label class="btn" title="Carga una copia exportada">Importar<input type="file" id="fileImport" accept=".json,application/json" hidden></label>
@@ -225,7 +262,38 @@ button:disabled{opacity:.55;cursor:wait}
       <div class="inicio-btns">
         <button id="btnInicioNuevo" class="primary big">＋ Añadir proceso</button>
         <button id="btnInicioBuscar" class="big">🔍 Buscar proceso</button>
+        <button id="btnInicioProd" class="big">📊 Productividad</button>
       </div>
+    </section>
+
+    <section id="prod" class="card">
+      <div class="phead">
+        <h2>📊 Productividad</h2>
+        <button id="pdAnt" title="Día anterior">◀</button>
+        <input type="date" id="pdFecha">
+        <button id="pdSig" title="Día siguiente">▶</button>
+        <button id="pdHoy">Hoy</button>
+        <button id="pdInicio">← Inicio</button>
+        <span id="pdDiaSem" class="ayuda"></span>
+        <span style="flex:1"></span>
+        <span id="pdEstadoNube" class="ayuda"></span>
+      </div>
+      <table id="prodTabla">
+        <thead><tr><th>Tarea</th><th>ID</th><th>Contenido</th><th>Código</th><th>Url (Confluence)</th><th>Inicio</th><th>Minutos</th><th></th></tr></thead>
+        <tbody id="prodFilas"></tbody>
+      </table>
+      <div class="padd">
+        <button id="pdAddFila">+ Fila</button>
+        <button id="pdAddDescanso" title="Añade «Descanso» con 60 minutos">+ Descanso (60 min)</button>
+      </div>
+      <div class="ptotal">
+        <span>Total: <b id="pdTotal">0</b> min = <b id="pdHoras">0</b> h</span>
+        <label>Jornada de este día <input type="number" id="pdJornada" min="0" step="5"> min</label>
+        <span id="pdAviso" class="pestado ok"></span>
+      </div>
+      <p class="pnota">Al pulsar «⏱ Generar código» en un proceso, la fila de hoy se crea sola con el ID, el nombre, el código y la hora de inicio. Tú solo apuntas los minutos. Los viernes la jornada empieza en 420 min (7 h); puedes cambiarla en cualquier día.</p>
+      <h3 style="margin:18px 0 4px;font-size:16px">Últimos días</h3>
+      <table id="prodResumen"><thead><tr><th>Día</th><th>Minutos</th><th>Horas</th><th>Jornada</th><th>Estado</th></tr></thead><tbody></tbody></table>
     </section>
 
     <div id="editor">
@@ -236,6 +304,11 @@ button:disabled{opacity:.55;cursor:wait}
         <label>Nombre del proceso<input id="pNombre" data-p="nombre" placeholder="Ej.: Atención en idiomas"></label>
         <label class="small">ID del proceso<input id="pId" data-p="pid"></label>
         <label class="small">Fecha<input id="pFecha" data-p="fecha" type="date"></label>
+      </div>
+      <div class="row codigo-row">
+        <label class="small">Código de trabajo<input id="pCodigo" data-p="codigo" placeholder="ddmmaaHHMM" inputmode="numeric"></label>
+        <button id="btnGenCodigo" class="primary" title="Crea el código con el día, mes, año, hora y minutos de ahora y lo copia">⏱ Generar código</button>
+        <button id="btnCopiarCodigo" title="Copia solo el código">📋 Copiar código</button>
       </div>
       <label>Notas generales (opcional)<textarea id="pNotas" data-p="notas" rows="2" placeholder="Motivo del cambio, petición, etc."></textarea></label>
       <div class="procfoot"><button id="btnCopiarNomId" title="Copia «Nombre-ID» para ponerlo entre los corchetes de Publicar/modificar [ ] en Confluence">📋 Copiar nombre-ID</button><button id="btnCopiarNom" title="Copia solo el nombre del proceso">📋 Nombre</button><button id="btnCopiarId" title="Copia solo el ID del proceso">📋 ID</button></div>
@@ -340,6 +413,17 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>Número</dt><dd>Cuántos contenidos tiene. Pasa el ratón por encima para ver el ID y los detalles.</dd>
     </dl>
 
+    <h3>Productividad y código de trabajo</h3>
+    <dl>
+      <dt>⏱ Generar código</dt><dd>En el proceso, crea el código con el día, mes, año, hora y minutos de ahora (ddmmaaHHMM) y lo copia. Además <b>anota la fila de hoy en Productividad</b> (ID, nombre, código y hora de inicio). Si ya había código te pregunta antes de cambiarlo.</dd>
+      <dt>📋 Copiar código</dt><dd>Copia solo el código del proceso.</dd>
+      <dt>📊 Productividad</dt><dd>Tu registro diario: tarea (desplegable), ID, contenido, código, url de Confluence, inicio y minutos. Abajo ves el total, las horas y si <b>faltan (▼) o sobran (▲)</b> minutos para la jornada. Se guarda solo y, si has entrado, también en Google (hoja «Productividad»).</dd>
+      <dt>Jornada</dt><dd>480 min (8 h) por defecto y 420 min (7 h) los viernes; se puede cambiar en cada día.</dd>
+      <dt>⤓ Completar</dt><dd>Pone en esa fila los minutos que faltan para llegar a la jornada (como tu fila de relleno).</dd>
+      <dt>+ Descanso (60 min)</dt><dd>Añade la fila de descanso.</dd>
+      <dt>↗</dt><dd>Abre el registro del proceso al que pertenece la fila.</dd>
+    </dl>
+
     <h3>Proceso (papá)</h3>
     <dl>
       <dt>📋 Copiar nombre-ID</dt><dd>Copia «Nombre del proceso-ID» para pegarlo entre los corchetes de <i>Publicar/modificar [ ]</i> en Confluence.</dd>
@@ -415,7 +499,16 @@ button:disabled{opacity:.55;cursor:wait}
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const imgURL = im => { if (!urls.has(im.iid)) urls.set(im.iid, URL.createObjectURL(im.blob)); return urls.get(im.iid); };
   const swap = (a, i, j) => { [a[i], a[j]] = [a[j], a[i]]; };
-  const autosize = t => { if (!t) return; t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; };
+  const autosize = t => {
+    if (!t) return;
+    /* al encoger el campo un instante para medirlo, el navegador recorta la página y salta hacia arriba: se guarda y restaura el scroll */
+    const x = window.scrollX, y = window.scrollY;
+    const h = t.scrollHeight + 2;
+    if (Math.abs(t.offsetHeight - h) > 1) {
+      t.style.height = 'auto'; const h2 = t.scrollHeight + 2; t.style.height = h2 + 'px';
+      window.scrollTo(x, y);
+    }
+  };
   function toast(msg, err) {
     const t = $('#toast'); t.textContent = msg; t.className = 'show' + (err ? ' err' : '');
     clearTimeout(t._t); t._t = setTimeout(() => t.className = '', err ? 4500 : 2600);
@@ -472,8 +565,11 @@ button:disabled{opacity:.55;cursor:wait}
   const req = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
   const store = m => db.transaction('procesos', m).objectStore('procesos');
   function openDB() {
-    const r = indexedDB.open('registro-cambios', 1);
-    r.onupgradeneeded = () => r.result.createObjectStore('procesos', { keyPath: 'id' });
+    const r = indexedDB.open('registro-cambios', 2);
+    r.onupgradeneeded = () => {
+      if (!r.result.objectStoreNames.contains('procesos')) r.result.createObjectStore('procesos', { keyPath: 'id' });
+      if (!r.result.objectStoreNames.contains('prod')) r.result.createObjectStore('prod', { keyPath: 'id' });
+    };
     return req(r);
   }
   async function guardarYa() {
@@ -485,6 +581,7 @@ button:disabled{opacity:.55;cursor:wait}
     if (!todos.includes(proc)) todos.push(proc);
     pintarEstado();
     renderLista();
+    sincronizarFilaProd(proc).catch(() => {});
   }
   let editVer = 0;
   function pintarEstado(txt) {
@@ -659,7 +756,7 @@ button:disabled{opacity:.55;cursor:wait}
   }
   function abrirRegistro(p, m) {
     proc = p; lastEid = null; lastGid = null; snap = foto(p);
-    document.body.classList.remove('sin-registro');
+    document.body.classList.remove('sin-registro', 'en-prod');
     document.querySelectorAll('[data-p]').forEach(el => { el.value = proc[el.dataset.p] || ''; });
     autosize($('#pNotas'));
     setModo(m); renderLista(); pintarEstado();
@@ -672,7 +769,7 @@ button:disabled{opacity:.55;cursor:wait}
     if (saveT) await guardarYa();
     const p = proc, eraEdicion = modo === 'edicion';
     proc = null; modo = 'lectura';
-    document.body.classList.add('sin-registro'); document.body.classList.remove('lectura');
+    document.body.classList.add('sin-registro'); document.body.classList.remove('lectura', 'en-prod');
     await descartarSiVacio(p);
     renderLista(); pintarEstado();
     if (eraEdicion) autoSubir(p);
@@ -884,6 +981,22 @@ button:disabled{opacity:.55;cursor:wait}
   document.querySelectorAll('[data-p]').forEach(el => el.addEventListener('input', () => {
     proc[el.dataset.p] = el.value; if (el.tagName === 'TEXTAREA') autosize(el); guardar();
   }));
+  const codigoAhora = () => { const d = new Date(), z = n => String(n).padStart(2, '0'); return z(d.getDate()) + z(d.getMonth() + 1) + z(d.getFullYear() % 100) + z(d.getHours()) + z(d.getMinutes()); };
+  async function copiarCodigo() {
+    const c = ($('#pCodigo').value || '').trim();
+    if (!c) { toast('Todavía no hay código: pulsa «Generar código»', true); return false; }
+    try { await navigator.clipboard.writeText(c); toast('Código ' + c + ' copiado ✓'); return true; }
+    catch (e) { $('#pCodigo').select(); toast('No se pudo copiar solo; selecciónalo y pulsa Ctrl+C', true); return false; }
+  }
+  $('#btnGenCodigo').onclick = async () => {
+    if (!proc) return;
+    if (modo === 'lectura') { toast('Pulsa ✏️ Editar para generar el código', true); return; }
+    if (proc.codigo && !confirm('Este registro ya tiene el código ' + proc.codigo + '.\n¿Generar uno nuevo con la hora de ahora?')) return;
+    proc.codigo = codigoAhora(); $('#pCodigo').value = proc.codigo; guardar();
+    const ok = await copiarCodigo();
+    try { if (await anotarEnProductividad(proc)) { toast('Código ' + proc.codigo + (ok ? ' copiado y' : '') + ' anotado en Productividad ✓'); guardar(); } } catch (e) { console.error(e); }
+  };
+  $('#btnCopiarCodigo').onclick = copiarCodigo;
   $('#buscar').addEventListener('input', renderLista);
 
   estEl.addEventListener('focusin', ev => {
@@ -1202,6 +1315,169 @@ button:disabled{opacity:.55;cursor:wait}
       renderProc(); toast(`Importados ${data.procesos.length} registro(s)`);
     } catch (err) { toast('No se pudo importar: ' + err.message, true); }
   };
+
+
+  /* ---------- Productividad (registro diario de tareas y minutos) ---------- */
+  const TAREAS = ['BBDD', 'Descanso', 'Reunión', 'Weekly', 'Actualización de Novedades', 'Formación impartida', 'Aplicación de ayuda', 'Formación recibida', 'Aviso', 'Manual - Creación', 'Manual - Modificación', 'Proceso - Creación', 'Proceso - Modificación', 'Oferta táctica', 'Eliminación / Despublicación contenidos', 'Peticiones de información', 'Proyectos'];
+  const DIAS_SEM = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  const pStore = m => db.transaction('prod', m).objectStore('prod');
+  const jornadaPorDefecto = iso => { const d = new Date(iso + 'T12:00:00'); return d.getDay() === 5 ? 420 : 480; };
+  const sumaMin = d => d.filas.reduce((a, f) => a + (Number(f.min) || 0), 0);
+  const fmtH = m => (Math.round(m / 60 * 100) / 100).toString().replace('.', ',');
+  let dia = null, pdSaveT = null, pdSubiendo = false;
+
+  async function leerDia(iso) {
+    let d = db ? await req(pStore('readonly').get(iso)) : null;
+    if (!d) d = { id: iso, fecha: iso, jornada: jornadaPorDefecto(iso), filas: [], actualizado: 0, pendienteNube: false };
+    return d;
+  }
+  async function escribirDia(d, cambio = true) {
+    if (cambio) { d.actualizado = Date.now(); d.pendienteNube = true; }
+    if (db) await req(pStore('readwrite').put(d));
+    if (cambio) programarSubidaDia(d);
+  }
+  const nuevaFila = (o = {}) => ({ rid: uid(), tarea: 'Proceso - Modificación', pid: '', contenido: '', codigo: '', url: '', inicio: '', min: '', procId: '', ...o });
+
+  function programarSubidaDia(d) {
+    if (!logueado()) { pintarNubeDia(d); return; }
+    clearTimeout(pdSaveT); pdSaveT = setTimeout(() => subirDia(d), 1500);
+    pintarNubeDia(d, 'Guardando…');
+  }
+  async function subirDia(d) {
+    if (pdSubiendo) { pdSaveT = setTimeout(() => subirDia(d), 1500); return; }
+    pdSubiendo = true;
+    try {
+      const ver = d.actualizado;
+      await api('guardarProd', { dia: { ...d, pendienteNube: undefined } });
+      if (d.actualizado === ver) { d.pendienteNube = false; if (db) await req(pStore('readwrite').put(d)); }
+    } catch (e) { errorNube(e); }
+    finally { pdSubiendo = false; if (dia && dia.id === d.id) pintarNubeDia(d); }
+  }
+  function pintarNubeDia(d, txt) {
+    const el = $('#pdEstadoNube'); if (!el) return;
+    el.textContent = txt || (!logueado() ? 'Solo en este navegador' : d && d.pendienteNube ? '● Cambios sin guardar en Google' : '☁ Guardado en Google');
+  }
+  async function traerDiasNube() {
+    if (!logueado()) return;
+    try {
+      const r = await api('listarProd');
+      for (const rd of (r.dias || [])) {
+        if (!rd || !rd.id) continue;
+        const l = db ? await req(pStore('readonly').get(rd.id)) : null;
+        if (!l || (rd.actualizado || 0) > (l.actualizado || 0)) { rd.pendienteNube = false; if (db) await req(pStore('readwrite').put(rd)); }
+      }
+    } catch (e) { if (e.message !== 'NOCFG') console.warn(e); }
+  }
+
+  function estadoDia(d) {
+    const t = sumaMin(d), j = Number(d.jornada) || 0, dif = j - t;
+    if (!d.filas.length) return { cls: 'falta', txt: '▼ Sin anotar' };
+    if (dif === 0) return { cls: 'ok', txt: '✔ Jornada completa' };
+    if (dif > 0) return { cls: 'falta', txt: '▼ Faltan ' + dif + ' min (' + fmtH(dif) + ' h)' };
+    return { cls: 'sobra', txt: '▲ Sobran ' + (-dif) + ' min (' + fmtH(-dif) + ' h)' };
+  }
+  function pintarTotales() {
+    const t = sumaMin(dia), e = estadoDia(dia);
+    $('#pdTotal').textContent = t; $('#pdHoras').textContent = fmtH(t);
+    $('#pdJornada').value = dia.jornada;
+    const a = $('#pdAviso'); a.textContent = e.txt; a.className = 'pestado ' + e.cls;
+  }
+  function pintarDia() {
+    const d = dia, tb = $('#prodFilas');
+    $('#pdFecha').value = d.id;
+    $('#pdDiaSem').textContent = DIAS_SEM[new Date(d.id + 'T12:00:00').getDay()];
+    tb.innerHTML = d.filas.map(f => `<tr data-rid="${f.rid}">
+      <td class="c-tar"><select data-k="tarea">${(TAREAS.includes(f.tarea) || !f.tarea ? TAREAS : TAREAS.concat([f.tarea])).map(t => `<option${t === f.tarea ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select></td>
+      <td class="c-id"><input data-k="pid" value="${esc(f.pid)}" placeholder="ID"></td>
+      <td class="c-con"><input data-k="contenido" value="${esc(f.contenido)}" placeholder="Nombre del contenido"></td>
+      <td class="c-cod"><input data-k="codigo" value="${esc(f.codigo)}" placeholder="ddmmaaHHMM"></td>
+      <td class="c-url"><input data-k="url" value="${esc(f.url)}" placeholder="https://…"></td>
+      <td class="c-ini"><input data-k="inicio" type="time" value="${esc(f.inicio)}"></td>
+      <td class="c-min"><input data-k="min" type="number" min="0" step="1" value="${esc(f.min)}"></td>
+      <td class="c-acc">
+        <button data-pa="completar" title="Completar: pone los minutos que faltan para llegar a la jornada">⤓ Completar</button>
+        <button data-pa="cod" title="Copiar código">📋</button>
+        ${f.procId && todos.some(p => p.id === f.procId) ? '<button data-pa="abrir" title="Abrir el registro de este proceso">↗</button>' : ''}
+        <button data-pa="borrar" title="Quitar fila">✕</button>
+      </td></tr>`).join('') || '<tr><td colspan="8" class="ayuda" style="padding:14px 6px">No hay filas este día. Pulsa «+ Fila» o genera un código en un proceso.</td></tr>';
+    pintarTotales(); pintarNubeDia(d); pintarResumen();
+  }
+  async function pintarResumen() {
+    const todosDias = db ? await req(pStore('readonly').getAll()) : [];
+    const lista = todosDias.filter(d => d.filas && d.filas.length).sort((a, b) => b.id.localeCompare(a.id)).slice(0, 15);
+    $('#prodResumen tbody').innerHTML = lista.map(d => {
+      const e = estadoDia(d), t = sumaMin(d);
+      return `<tr class="dia${d.id === hoy() ? ' hoyfila' : ''}" data-dia="${d.id}"><td>${DIAS_SEM[new Date(d.id + 'T12:00:00').getDay()].slice(0, 3)} ${fmtFecha(d.id)}</td><td>${t}</td><td>${fmtH(t)}</td><td>${d.jornada}</td><td>${esc(e.txt)}</td></tr>`;
+    }).join('') || '<tr><td colspan="5" class="ayuda">Todavía no hay días anotados.</td></tr>';
+  }
+  async function abrirDia(iso) { dia = await leerDia(iso); pintarDia(); }
+  async function abrirProductividad() {
+    if (saveT) await guardarYa();
+    if (proc) await irInicio();
+    document.body.classList.add('en-prod');
+    window.scrollTo(0, 0);
+    await abrirDia(hoy());
+    await traerDiasNube();
+    await abrirDia(dia.id);
+  }
+  const moverDia = n => { const d = new Date(dia.id + 'T12:00:00'); d.setDate(d.getDate() + n); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+  $('#btnProd').onclick = abrirProductividad;
+  $('#btnInicioProd').onclick = abrirProductividad;
+  $('#pdAnt').onclick = () => abrirDia(moverDia(-1));
+  $('#pdSig').onclick = () => abrirDia(moverDia(1));
+  $('#pdHoy').onclick = () => abrirDia(hoy());
+  $('#pdInicio').onclick = () => { document.body.classList.remove('en-prod'); window.scrollTo(0, 0); };
+  $('#pdFecha').onchange = ev => { if (ev.target.value) abrirDia(ev.target.value); };
+  $('#pdAddFila').onclick = async () => { dia.filas.push(nuevaFila({ tarea: 'BBDD' })); await escribirDia(dia); pintarDia(); $('#prodFilas').querySelector('tr:last-child [data-k=pid]').focus(); };
+  $('#pdAddDescanso').onclick = async () => { dia.filas.push(nuevaFila({ tarea: 'Descanso', min: 60 })); await escribirDia(dia); pintarDia(); };
+  $('#pdJornada').addEventListener('input', async ev => { dia.jornada = Number(ev.target.value) || 0; await escribirDia(dia); pintarTotales(); pintarResumen(); });
+  $('#prodFilas').addEventListener('input', async ev => {
+    const t = ev.target, k = t.dataset.k, tr = t.closest('tr'); if (!k || !tr) return;
+    const f = dia.filas.find(x => x.rid === tr.dataset.rid); if (!f) return;
+    f[k] = t.value; await escribirDia(dia);
+    if (k === 'min') { pintarTotales(); pintarResumen(); }
+  });
+  $('#prodFilas').addEventListener('click', async ev => {
+    const b = ev.target.closest('[data-pa]'); if (!b) return;
+    const f = dia.filas.find(x => x.rid === b.closest('tr').dataset.rid); if (!f) return;
+    const a = b.dataset.pa;
+    if (a === 'borrar') { dia.filas = dia.filas.filter(x => x !== f); await escribirDia(dia); pintarDia(); }
+    else if (a === 'completar') {
+      const otros = dia.filas.filter(x => x !== f).reduce((s, x) => s + (Number(x.min) || 0), 0);
+      f.min = Math.max(0, (Number(dia.jornada) || 0) - otros); await escribirDia(dia); pintarDia();
+    }
+    else if (a === 'cod') {
+      if (!f.codigo) { toast('Esta fila no tiene código', true); return; }
+      try { await navigator.clipboard.writeText(f.codigo); toast('Código ' + f.codigo + ' copiado ✓'); } catch (e) { toast('No se pudo copiar', true); }
+    }
+    else if (a === 'abrir') { const p = todos.find(x => x.id === f.procId); if (p) await abrirRegistro(p, 'lectura'); }
+  });
+  $('#prodResumen').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-dia]'); if (tr) { abrirDia(tr.dataset.dia); window.scrollTo(0, 0); } });
+
+  // Al generar el código en un proceso: crea (o actualiza) su fila en la Productividad de hoy
+  async function anotarEnProductividad(p) {
+    if (!db || !p.codigo) return false;
+    const iso = hoy();
+    const d = (dia && dia.id === iso) ? dia : await leerDia(iso);
+    let f = d.filas.find(x => x.rid === p.prodRid) || d.filas.find(x => x.codigo === p.codigo);
+    if (!f) { f = nuevaFila({ inicio: horaAhora() }); d.filas.push(f); }
+    f.pid = p.pid || ''; f.contenido = p.nombre || ''; f.codigo = p.codigo; f.procId = p.id;
+    if (!f.inicio) f.inicio = horaAhora();
+    p.prodRid = f.rid; p.prodDia = iso;
+    await escribirDia(d);
+    if (dia && dia.id === d.id) { dia = d; pintarDia(); }
+    return true;
+  }
+  // Si cambias el nombre o el ID del proceso, se actualiza su fila
+  async function sincronizarFilaProd(p) {
+    if (!db || !p || !p.prodRid || !p.prodDia) return;
+    const d = (dia && dia.id === p.prodDia) ? dia : await leerDia(p.prodDia);
+    const f = d.filas.find(x => x.rid === p.prodRid); if (!f) return;
+    if (f.pid === (p.pid || '') && f.contenido === (p.nombre || '') && f.codigo === (p.codigo || '')) return;
+    f.pid = p.pid || ''; f.contenido = p.nombre || ''; f.codigo = p.codigo || '';
+    await escribirDia(d);
+    if (dia && dia.id === d.id && document.body.classList.contains('en-prod')) pintarDia();
+  }
 
   /* ---------- Google Sheets ---------- */
   function leerCfg() { try { return JSON.parse(localStorage.getItem('rc-nube') || '{}'); } catch (e) { return {}; } }
