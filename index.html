@@ -133,6 +133,20 @@ body.sin-registro #editor,body.sin-registro .bar{display:none}
 #prod .estado-nube.pend{color:#8a4300;font-weight:700}
 header .actions button.actual{background:#fff3e3;border-color:var(--ac);font-weight:700}
 body.en-prod #btnNube,body.en-prod #btnExport,body.en-prod label.btn[title^="Carga"]{display:none}
+header .actions{position:relative}
+.menu-herr{position:relative;display:inline-block}
+#menuHerr{position:absolute;right:0;top:calc(100% + 6px);min-width:210px;background:#fff;border:1px solid var(--bd);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.15);padding:6px;z-index:50}
+#menuHerr[hidden]{display:none}
+#menuHerr a{display:block;padding:10px 12px;border-radius:8px;color:inherit;text-decoration:none;font-size:15px}
+#menuHerr a:hover,#menuHerr a:focus{background:#fff3e3;outline:none}
+#menuHerr a::after{content:' ↗';color:var(--mut)}
+#menuHerr hr{border:none;border-top:1px solid var(--bd);margin:6px 0}
+#menuHerr button.gest{display:block;width:100%;text-align:left;border:none;background:transparent;padding:10px 12px;font-size:15px;border-radius:8px;cursor:pointer}
+#menuHerr button.gest:hover{background:#fff3e3}
+#listaEnlaces .en-fila{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+#listaEnlaces .en-fila input[data-e=nombre]{flex:0 0 180px}
+#listaEnlaces .en-fila input[data-e=url]{flex:1;min-width:260px}
+#dlgEnlaces{min-width:min(760px,92vw)}
 #prod{display:none}
 body.en-prod #prod{display:block}
 body.en-prod #inicio,body.en-prod #editor,body.en-prod .bar{display:none}
@@ -250,6 +264,8 @@ button:disabled{opacity:.55;cursor:wait}
     <button id="btnNuevo" class="primary">+ Nuevo proceso</button>
     <button id="btnProc" title="Lista de procesos, buscador y registros por fecha">📁 Procesos</button>
     <button id="btnProd" title="Tu registro diario de tareas y minutos (Productividad)">📊 Productividad</button>
+    <span class="menu-herr"><button id="btnHerr" title="Tus otras herramientas (se abren en una ventana nueva)" aria-haspopup="true" aria-expanded="false">🔗 Herramientas ▾</button>
+      <div id="menuHerr" role="menu" hidden></div></span>
     <button id="btnNube" title="Ver y abrir los registros guardados en tu hoja de Google">☁ Guardados en Google</button>
     <button id="btnExport" title="Descarga una copia de seguridad de todos los procesos">Exportar</button>
     <label class="btn" title="Carga una copia exportada">Importar<input type="file" id="fileImport" accept=".json,application/json" hidden></label>
@@ -402,6 +418,16 @@ button:disabled{opacity:.55;cursor:wait}
   </form>
 </dialog>
 
+<dialog id="dlgEnlaces">
+  <div class="dhead"><h2>🔗 Mis enlaces</h2><button data-close title="Cerrar">✕</button></div>
+  <form id="formEnlaces">
+    <p class="ayuda" style="margin:0 0 10px">Aparecen en el menú «🔗 Herramientas» y se abren en una ventana nueva. Se guardan en este navegador.</p>
+    <div id="listaEnlaces"></div>
+    <button type="button" id="enAdd" style="margin-top:10px">+ Añadir enlace</button>
+    <div class="dfoot"><button type="button" id="enRestaurar" title="Vuelve a los cuatro enlaces iniciales">Restaurar los iniciales</button><span style="flex:1"></span><button class="primary" type="submit">Guardar</button></div>
+  </form>
+</dialog>
+
 <dialog id="dlgConfig">
   <div class="dhead"><h2>⚙ Configuración</h2><button data-close title="Cerrar">✕</button></div>
   <form id="formConfig">
@@ -464,6 +490,7 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>Código a mano</dt><dd>El campo «Código de trabajo» del proceso y el de cada fila de Productividad se pueden escribir o cambiar a mano. Si lo cambias en el proceso, se actualiza en la fila que creó.</dd>
       <dt>Editar o quitar filas</dt><dd>Todos los campos de cada fila se pueden modificar y la ✕ la quita (pide confirmación). Cada día se puede abrir con ◀ ▶ o el calendario.</dd>
       <dt>⬇ Exportar Excel</dt><dd>Descarga un .xlsx con el mismo formato que tu Excel (Día, Tarea, ID, Contenido, Código, Url, Inicio, Tiempo parcial, Minutos Totales, Horas Empleadas) para el periodo que elijas, o todo el histórico. También hay CSV.</dd>
+      <dt>🔗 Herramientas</dt><dd>Menú con accesos directos a Pongo datos, Gestión de procesos, Listadis y Saca ID. Cada una se abre en una ventana nueva. En «⚙ Gestionar enlaces…», al final del menú, puedes añadir, quitar, renombrar y ordenar tus enlaces (se guardan en este navegador).</dd>
       <dt>⤓ Completar</dt><dd>Pone en esa fila los minutos que faltan para llegar a la jornada (como tu fila de relleno).</dd>
       <dt>+ Descanso (60 min)</dt><dd>Añade la fila de descanso.</dd>
       <dt>↗</dt><dd>Abre el registro del proceso al que pertenece la fila.</dd>
@@ -1470,6 +1497,50 @@ button:disabled{opacity:.55;cursor:wait}
   const moverDia = n => { const d = new Date(dia.id + 'T12:00:00'); d.setDate(d.getDate() + n); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
   const salirProd = async () => { document.body.classList.remove('en-prod'); if (proc) await irInicio(); window.scrollTo(0, 0); };
   $('#btnProd').onclick = () => { if (!document.body.classList.contains('en-prod')) abrirProductividad(); };
+  const ENLACES_INI = [
+    { nombre: 'Pongo datos', url: 'https://sites.google.com/view/pongodatos/inicio' },
+    { nombre: 'Gestión de procesos', url: 'https://maleantix.github.io/gestionprocesos/' },
+    { nombre: 'Listadis', url: 'https://sites.google.com/view/listadis/inicio' },
+    { nombre: 'Saca ID', url: 'https://sites.google.com/view/sacaid/inicio' }
+  ];
+  const leerEnlaces = () => { try { const l = JSON.parse(localStorage.getItem('rc-enlaces')); if (Array.isArray(l)) return l; } catch (e) { } return ENLACES_INI.map(x => ({ ...x })); };
+  const guardarEnlaces = l => { try { localStorage.setItem('rc-enlaces', JSON.stringify(l)); } catch (e) { } };
+  const urlSegura = u => { u = (u || '').trim(); if (!u) return ''; if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u; return /^https?:\/\//i.test(u) ? u : ''; };
+  const menuH = $('#menuHerr'), cerrarMenuH = () => { menuH.hidden = true; $('#btnHerr').setAttribute('aria-expanded', 'false'); };
+  function pintarMenuH() {
+    const l = leerEnlaces();
+    menuH.innerHTML = l.map(e => `<a role="menuitem" href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.nombre || e.url)}</a>`).join('') + (l.length ? '<hr>' : '<p class="ayuda" style="padding:8px 12px;margin:0">Aún no hay enlaces.</p>') + '<button type="button" class="gest" role="menuitem">⚙ Gestionar enlaces…</button>';
+  }
+  pintarMenuH();
+  function filaEnlace(e) { return `<div class="en-fila"><input data-e="nombre" placeholder="Nombre" value="${esc(e.nombre)}"><input data-e="url" placeholder="https://…" value="${esc(e.url)}"><button type="button" data-en="subir" title="Subir">▲</button><button type="button" data-en="bajar" title="Bajar">▼</button><button type="button" data-en="borrar" title="Quitar">✕</button></div>`; }
+  const pintarListaEn = l => { $('#listaEnlaces').innerHTML = l.map(filaEnlace).join(''); };
+  const leerListaEn = () => [...document.querySelectorAll('#listaEnlaces .en-fila')].map(f => ({ nombre: f.querySelector('[data-e=nombre]').value.trim(), url: f.querySelector('[data-e=url]').value.trim() }));
+  $('#btnHerr').onclick = ev => { ev.stopPropagation(); menuH.hidden = !menuH.hidden; $('#btnHerr').setAttribute('aria-expanded', String(!menuH.hidden)); };
+  menuH.addEventListener('click', ev => {
+    if (ev.target.closest('button.gest')) { cerrarMenuH(); pintarListaEn(leerEnlaces()); $('#dlgEnlaces').showModal(); return; }
+    const a = ev.target.closest('a'); cerrarMenuH(); if (!a) return;
+    ev.preventDefault();   // ventana nueva e independiente (si el navegador la bloquea, pestaña)
+    const w = window.open(a.href, '_blank', 'popup=yes,noopener,width=1280,height=860,left=60,top=40');
+    if (!w) window.open(a.href, '_blank', 'noopener');
+  });
+  $('#enAdd').onclick = () => { $('#listaEnlaces').insertAdjacentHTML('beforeend', filaEnlace({ nombre: '', url: '' })); $('#listaEnlaces .en-fila:last-child [data-e=nombre]').focus(); };
+  $('#enRestaurar').onclick = () => { if (confirm('¿Volver a los cuatro enlaces iniciales? Se perderán los que hayas añadido.')) pintarListaEn(ENLACES_INI); };
+  $('#listaEnlaces').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-en]'); if (!b) return;
+    const f = b.closest('.en-fila');
+    if (b.dataset.en === 'borrar') f.remove();
+    else if (b.dataset.en === 'subir' && f.previousElementSibling) f.parentNode.insertBefore(f, f.previousElementSibling);
+    else if (b.dataset.en === 'bajar' && f.nextElementSibling) f.parentNode.insertBefore(f.nextElementSibling, f);
+  });
+  $('#formEnlaces').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const crudo = leerListaEn().filter(e => e.nombre || e.url), malos = [];
+    const l = crudo.map(e => { const u = urlSegura(e.url); if (!u) malos.push(e.nombre || e.url || '(sin nombre)'); return { nombre: e.nombre || u.replace(/^https?:\/\//, ''), url: u }; }).filter(e => e.url);
+    if (malos.length) { toast('Revisa la dirección de: ' + malos.join(', '), true); return; }
+    guardarEnlaces(l); pintarMenuH(); $('#dlgEnlaces').close(); toast('Enlaces guardados ✓');
+  });
+  document.addEventListener('click', ev => { if (!menuH.hidden && !ev.target.closest('.menu-herr')) cerrarMenuH(); });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape') cerrarMenuH(); });
   $('#btnProc').onclick = async () => { if (document.body.classList.contains('en-prod')) { document.body.classList.remove('en-prod'); window.scrollTo(0, 0); } else if (proc) await irInicio(); };
   new MutationObserver(() => {
     const en = document.body.classList.contains('en-prod');
