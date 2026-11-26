@@ -269,16 +269,17 @@ button:disabled{opacity:.55;cursor:wait}
 
     <section id="prod" class="card">
       <div class="phead">
+        <button id="pdInicio" title="Vuelve al inicio, con tus procesos">← Inicio</button>
         <h2>📊 Productividad</h2>
         <button id="pdAnt" title="Día anterior">◀</button>
         <input type="date" id="pdFecha">
         <button id="pdSig" title="Día siguiente">▶</button>
         <button id="pdHoy">Hoy</button>
         <button id="pdVolver" class="primary" style="display:none">↩ Volver al proceso</button>
-        <button id="pdInicio">← Inicio</button>
         <button id="pdExport" title="Descarga tus días en un Excel como el que tenías">⬇ Exportar Excel</button>
         <span id="pdDiaSem" class="ayuda"></span>
         <span style="flex:1"></span>
+        <button id="pdSubir" title="Guarda este día en Google ahora mismo">☁ Guardar ahora</button>
         <span id="pdEstadoNube" class="ayuda"></span>
       </div>
       <table id="prodTabla">
@@ -453,6 +454,8 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>📊 Productividad</dt><dd>Tu registro diario: tarea (desplegable), ID, contenido, código, url de Confluence, inicio y minutos. Abajo ves el total, las horas y si <b>faltan (▼) o sobran (▲)</b> minutos para la jornada. Se guarda solo y, si has entrado, también en Google (hoja «Productividad»).</dd>
       <dt>Jornada</dt><dd>480 min (8 h) por defecto y 420 min (7 h) los viernes; se puede cambiar en cada día.</dd>
       <dt>📊 Añadir a productividad</dt><dd>En el proceso (junto a Copiar ID): pones el día (hoy por defecto), la tarea y los minutos y se apunta la fila con el nombre, ID y código del proceso. Si ya lo habías apuntado ese día, la actualiza.</dd>
+      <dt>← Inicio (en Productividad)</dt><dd>Sales de Productividad y vuelves al inicio, con la lista de procesos, el buscador y los botones Añadir/Buscar proceso.</dd>
+      <dt>Guardado de Productividad</dt><dd>Es automático: queda en el navegador al instante y en Google a los 2 segundos de tu último cambio. Arriba a la derecha pone si ya está guardado; <b>☁ Guardar ahora</b> lo fuerza.</dd>
       <dt>↩ Volver al proceso</dt><dd>En Productividad, te devuelve al proceso que tenías abierto sin perder nada. Así vas y vienes para copiar.</dd>
       <dt>📋 junto a cada campo</dt><dd>En cada fila de Productividad: copia ese campo (ID, contenido, código, url, inicio o minutos). <b>📋 Fila</b> copia toda la fila separada por tabuladores para pegarla de golpe en otro Excel.</dd>
       <dt>Código a mano</dt><dd>El campo «Código de trabajo» del proceso y el de cada fila de Productividad se pueden escribir o cambiar a mano. Si lo cambias en el proceso, se actualiza en la fila que creó.</dd>
@@ -1467,6 +1470,10 @@ button:disabled{opacity:.55;cursor:wait}
   $('#pdSig').onclick = () => abrirDia(moverDia(1));
   $('#pdHoy').onclick = () => abrirDia(hoy());
   $('#pdVolver').onclick = () => { document.body.classList.remove('en-prod'); window.scrollTo(0, 0); };
+  $('#pdSubir').onclick = async () => {
+    if (!logueado()) { toast('Entra con tu usuario para guardar en Google', true); return; }
+    clearTimeout(pdSaveT); await subirDia(dia); toast('Día guardado en Google ✓');
+  };
   $('#pdInicio').onclick = async () => { document.body.classList.remove('en-prod'); if (proc) await irInicio(); window.scrollTo(0, 0); };
   $('#pdFecha').onchange = ev => { if (ev.target.value) abrirDia(ev.target.value); };
   $('#pdAddFila').onclick = async () => { dia.filas.push(nuevaFila({ tarea: 'BBDD' })); await escribirDia(dia); pintarDia(); $('#prodFilas').querySelector('tr:last-child [data-k=pid]').focus(); };
