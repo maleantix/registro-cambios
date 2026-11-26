@@ -128,7 +128,11 @@ label.auto input{width:auto;margin-top:2px}
 .inicio-btns{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap}
 .inicio-btns .big{width:auto;min-width:230px}
 body.sin-registro #editor,body.sin-registro .bar{display:none}
+#prod .estado-nube{border:none;background:transparent;color:var(--mut);font-size:14px;padding:6px 8px;cursor:pointer;border-radius:8px}
+#prod .estado-nube:hover{background:#eee;color:inherit}
+#prod .estado-nube.pend{color:#8a4300;font-weight:700}
 header .actions button.actual{background:#fff3e3;border-color:var(--ac);font-weight:700}
+body.en-prod #btnNube,body.en-prod #btnExport,body.en-prod label.btn[title^="Carga"]{display:none}
 #prod{display:none}
 body.en-prod #prod{display:block}
 body.en-prod #inicio,body.en-prod #editor,body.en-prod .bar{display:none}
@@ -277,12 +281,9 @@ button:disabled{opacity:.55;cursor:wait}
         <input type="date" id="pdFecha">
         <button id="pdSig" title="Día siguiente">▶</button>
         <button id="pdHoy">Hoy</button>
-        <button id="pdVolver" class="primary" style="display:none">↩ Volver al proceso</button>
         <button id="pdExport" title="Descarga tus días en un Excel como el que tenías">⬇ Exportar Excel</button>
         <span id="pdDiaSem" class="ayuda"></span>
-        <span style="flex:1"></span>
-        <button id="pdSubir" title="Guarda este día en Google ahora mismo">☁ Guardar ahora</button>
-        <span id="pdEstadoNube" class="ayuda"></span>
+        <button id="pdEstadoNube" class="estado-nube" title="El guardado es automático. Púlsalo para guardar en Google ahora mismo"></button>
       </div>
       <div class="ptotal">
         <span>Total: <b id="pdTotal">0</b> min = <b id="pdHoras">0</b> h</span>
@@ -456,9 +457,8 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>📊 Productividad</dt><dd>Tu registro diario: tarea (desplegable), ID, contenido, código, url de Confluence, inicio y minutos. Abajo ves el total, las horas y si <b>faltan (▼) o sobran (▲)</b> minutos para la jornada. Se guarda solo y, si has entrado, también en Google (hoja «Productividad»).</dd>
       <dt>Jornada</dt><dd>480 min (8 h) por defecto y 420 min (7 h) los viernes; se puede cambiar en cada día.</dd>
       <dt>📊 Añadir a productividad</dt><dd>En el proceso (junto a Copiar ID): pones el día (hoy por defecto), la tarea y los minutos y se apunta la fila con el nombre, ID y código del proceso. Si ya lo habías apuntado ese día, la actualiza.</dd>
-      <dt>📁 Procesos / 📊 Productividad (arriba)</dt><dd>Siempre visibles, para cambiar de una pantalla a otra. El que está resaltado es en el que estás. «Procesos» te lleva al inicio, con la lista, el buscador y los botones Añadir/Buscar proceso.</dd>
-      <dt>Guardado de Productividad</dt><dd>Es automático: queda en el navegador al instante y en Google a los 2 segundos de tu último cambio. Arriba a la derecha pone si ya está guardado; <b>☁ Guardar ahora</b> lo fuerza.</dd>
-      <dt>↩ Volver al proceso</dt><dd>En Productividad, te devuelve al proceso que tenías abierto sin perder nada. Así vas y vienes para copiar.</dd>
+      <dt>📁 Procesos / 📊 Productividad (arriba)</dt><dd>Siempre visibles, para cambiar de una pantalla a otra. El que está resaltado es en el que estás. «Procesos» te devuelve a lo que tenías en procesos: al registro que estabas editando o, si no había ninguno, al inicio con la lista y el buscador. En Productividad se ocultan los botones que solo sirven para procesos (Guardados en Google, Exportar, Importar).</dd>
+      <dt>Guardado de Productividad</dt><dd>Es automático: queda en el navegador al instante y en Google a los 2 segundos de tu último cambio. Junto a la fecha, el indicador «☁ Guardado en Google» te dice si ya está al día; si lo pulsas, guarda en ese momento.</dd>
       <dt>Copiar fila</dt><dd>Copia la fila entera (ver abajo). Los iconos ⤓ (completar minutos), ↗ (abrir el proceso) y ✕ (quitar) están al final de cada fila.</dd>
       <dt>📋 junto a cada campo</dt><dd>En cada fila de Productividad: copia ese campo (ID, contenido, código, url, inicio o minutos). <b>Copiar fila</b> copia toda la fila separada por tabuladores para pegarla de golpe en otro Excel.</dd>
       <dt>Código a mano</dt><dd>El campo «Código de trabajo» del proceso y el de cada fila de Productividad se pueden escribir o cambiar a mano. Si lo cambias en el proceso, se actualiza en la fila que creó.</dd>
@@ -1400,7 +1400,9 @@ button:disabled{opacity:.55;cursor:wait}
   }
   function pintarNubeDia(d, txt) {
     const el = $('#pdEstadoNube'); if (!el) return;
-    el.textContent = txt || (!logueado() ? 'Solo en este navegador' : d && d.pendienteNube ? '● Cambios sin guardar en Google' : '☁ Guardado en Google');
+    const pend = !!txt || (logueado() && d && d.pendienteNube);
+    el.textContent = txt ? '● ' + txt : (!logueado() ? '⚠ Solo en este navegador' : pend ? '● Sin guardar en Google' : '☁ Guardado en Google');
+    el.classList.toggle('pend', pend);
   }
   async function traerDiasNube() {
     if (!logueado()) return;
@@ -1460,7 +1462,6 @@ button:disabled{opacity:.55;cursor:wait}
   async function abrirProductividad() {
     if (saveT) await guardarYa();
     document.body.classList.add('en-prod');
-    const v = $('#pdVolver'); v.style.display = proc ? '' : 'none'; if (proc) { v.textContent = '↩ Volver al proceso'; v.title = 'Volver a «' + (proc.nombre || 'proceso sin nombre') + '»'; }
     window.scrollTo(0, 0);
     await abrirDia(hoy());
     await traerDiasNube();
@@ -1469,7 +1470,7 @@ button:disabled{opacity:.55;cursor:wait}
   const moverDia = n => { const d = new Date(dia.id + 'T12:00:00'); d.setDate(d.getDate() + n); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
   const salirProd = async () => { document.body.classList.remove('en-prod'); if (proc) await irInicio(); window.scrollTo(0, 0); };
   $('#btnProd').onclick = () => { if (!document.body.classList.contains('en-prod')) abrirProductividad(); };
-  $('#btnProc').onclick = () => salirProd();
+  $('#btnProc').onclick = async () => { if (document.body.classList.contains('en-prod')) { document.body.classList.remove('en-prod'); window.scrollTo(0, 0); } else if (proc) await irInicio(); };
   new MutationObserver(() => {
     const en = document.body.classList.contains('en-prod');
     $('#btnProd').classList.toggle('actual', en); $('#btnProc').classList.toggle('actual', !en);
@@ -1479,8 +1480,7 @@ button:disabled{opacity:.55;cursor:wait}
   $('#pdAnt').onclick = () => abrirDia(moverDia(-1));
   $('#pdSig').onclick = () => abrirDia(moverDia(1));
   $('#pdHoy').onclick = () => abrirDia(hoy());
-  $('#pdVolver').onclick = () => { document.body.classList.remove('en-prod'); window.scrollTo(0, 0); };
-  $('#pdSubir').onclick = async () => {
+  $('#pdEstadoNube').onclick = async () => {
     if (!logueado()) { toast('Entra con tu usuario para guardar en Google', true); return; }
     clearTimeout(pdSaveT); await subirDia(dia); toast('Día guardado en Google ✓');
   };
