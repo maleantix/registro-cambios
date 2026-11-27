@@ -282,7 +282,6 @@ button:disabled{opacity:.55;cursor:wait}
   <div class="actions">
     <button id="btnNuevo" class="primary">+ Nuevo proceso</button>
     <button id="btnProc" title="Lista de procesos, buscador y registros por fecha">📁 Procesos</button>
-    <button id="btnTablas" title="Revisa los anchos de tus tablas HTML (99 %, porcentajes, última columna sin ancho)">📐 Tablas</button>
     <button id="btnProd" title="Tu registro diario de tareas y minutos (Productividad)">📊 Productividad</button>
     <span class="menu-herr"><button id="btnHerr" title="Tus otras herramientas (se abren en una ventana nueva)" aria-haspopup="true" aria-expanded="false">🔗 Herramientas ▾</button>
       <div id="menuHerr" role="menu" hidden></div></span>
@@ -524,8 +523,8 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>Código a mano</dt><dd>El campo «Código de trabajo» del proceso y el de cada fila de Productividad se pueden escribir o cambiar a mano. Si lo cambias en el proceso, se actualiza en la fila que creó.</dd>
       <dt>Editar o quitar filas</dt><dd>Todos los campos de cada fila se pueden modificar y la ✕ la quita (pide confirmación). Cada día se puede abrir con ◀ ▶ o el calendario.</dd>
       <dt>⬇ Exportar Excel</dt><dd>Descarga un .xlsx con el mismo formato que tu Excel (Día, Tarea, ID, Contenido, Código, Url, Inicio, Tiempo parcial, Minutos Totales, Horas Empleadas) para el periodo que elijas, o todo el histórico. También hay CSV.</dd>
-      <dt>🔗 Herramientas</dt><dd>Menú con accesos directos a Pongo datos, Gestión de procesos, Listadis y Saca ID. Cada una se abre en una ventana nueva. En «⚙ Gestionar enlaces…», al final del menú, puedes añadir, quitar, renombrar y ordenar tus enlaces (se guardan en este navegador).</dd>
-      <dt>📐 Tablas</dt><dd>Revisa los anchos de tus tablas HTML. Pegas el código y comprueba: tabla al 99 %, anchos solo en la primera fila y en %, y la última columna sin ancho. Si ya hay porcentajes válidos los respeta; si no, reparte a partes iguales. Puedes cambiar cualquier porcentaje y ver el resultado, y «Copiar HTML corregido» te da el código listo. Solo toca los anchos; el resto del código queda igual.</dd>
+      <dt>🔗 Herramientas</dt><dd>Menú con accesos directos a Pongo datos, Gestión de procesos, Listadis y Saca ID. «📐 Revisar tablas» (primera opción) abre aquí dentro la revisión de anchos de tablas. Los demás enlaces se abren cada uno en una ventana nueva. En «⚙ Gestionar enlaces…», al final del menú, puedes añadir, quitar, renombrar y ordenar tus enlaces (se guardan en este navegador).</dd>
+      <dt>🔗 Herramientas → 📐 Revisar tablas</dt><dd>Revisa los anchos de tus tablas HTML (se abre desde el menú 🔗 Herramientas). Pegas el código y comprueba: tabla al 99 %, anchos solo en la primera fila y en %, y la última columna sin ancho. Si ya hay porcentajes válidos los respeta; si no, reparte a partes iguales. Puedes cambiar cualquier porcentaje y ver el resultado, y «Copiar HTML corregido» te da el código listo. Solo toca los anchos; el resto del código queda igual.</dd>
       <dt>⤓ Completar</dt><dd>Pone en esa fila los minutos que faltan para llegar a la jornada (como tu fila de relleno).</dd>
       <dt>+ Descanso (60 min)</dt><dd>Añade la fila de descanso.</dd>
       <dt>↗</dt><dd>Abre el registro del proceso al que pertenece la fila.</dd>
@@ -1544,7 +1543,7 @@ button:disabled{opacity:.55;cursor:wait}
   const menuH = $('#menuHerr'), cerrarMenuH = () => { menuH.hidden = true; $('#btnHerr').setAttribute('aria-expanded', 'false'); };
   function pintarMenuH() {
     const l = leerEnlaces();
-    menuH.innerHTML = l.map(e => `<a role="menuitem" href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.nombre || e.url)}</a>`).join('') + (l.length ? '<hr>' : '<p class="ayuda" style="padding:8px 12px;margin:0">Aún no hay enlaces.</p>') + '<button type="button" class="gest" role="menuitem">⚙ Gestionar enlaces…</button>';
+    menuH.innerHTML = '<button type="button" class="gest" role="menuitem" data-int="tablas">📐 Revisar tablas</button><hr>' + l.map(e => `<a role="menuitem" href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.nombre || e.url)}</a>`).join('') + (l.length ? '<hr>' : '<p class="ayuda" style="padding:8px 12px;margin:0">Aún no hay enlaces.</p>') + '<button type="button" class="gest" role="menuitem">⚙ Gestionar enlaces…</button>';
   }
   pintarMenuH();
   function filaEnlace(e) { return `<div class="en-fila"><input data-e="nombre" placeholder="Nombre" value="${esc(e.nombre)}"><input data-e="url" placeholder="https://…" value="${esc(e.url)}"><button type="button" data-en="subir" title="Subir">▲</button><button type="button" data-en="bajar" title="Bajar">▼</button><button type="button" data-en="borrar" title="Quitar">✕</button></div>`; }
@@ -1552,6 +1551,7 @@ button:disabled{opacity:.55;cursor:wait}
   const leerListaEn = () => [...document.querySelectorAll('#listaEnlaces .en-fila')].map(f => ({ nombre: f.querySelector('[data-e=nombre]').value.trim(), url: f.querySelector('[data-e=url]').value.trim() }));
   $('#btnHerr').onclick = ev => { ev.stopPropagation(); menuH.hidden = !menuH.hidden; $('#btnHerr').setAttribute('aria-expanded', String(!menuH.hidden)); };
   menuH.addEventListener('click', ev => {
+    if (ev.target.closest('[data-int="tablas"]')) { cerrarMenuH(); abrirTablas(); return; }
     if (ev.target.closest('button.gest')) { cerrarMenuH(); pintarListaEn(leerEnlaces()); $('#dlgEnlaces').showModal(); return; }
     const a = ev.target.closest('a'); cerrarMenuH(); if (!a) return;
     ev.preventDefault();   // ventana nueva e independiente (si el navegador la bloquea, pestaña)
@@ -1579,7 +1579,7 @@ button:disabled{opacity:.55;cursor:wait}
   $('#btnProc').onclick = async () => { if (document.body.classList.contains('en-prod') || document.body.classList.contains('en-tablas')) { document.body.classList.remove('en-prod', 'en-tablas'); window.scrollTo(0, 0); } else if (proc) await irInicio(); };
   new MutationObserver(() => {
     const en = document.body.classList.contains('en-prod'), et = document.body.classList.contains('en-tablas');
-    $('#btnProd').classList.toggle('actual', en); $('#btnTablas').classList.toggle('actual', et); $('#btnProc').classList.toggle('actual', !en && !et);
+    $('#btnProd').classList.toggle('actual', en); $('#btnHerr').classList.toggle('actual', et); $('#btnProc').classList.toggle('actual', !en && !et);
   }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   $('#btnProc').classList.add('actual');
   $('#btnInicioProd').onclick = abrirProductividad;
@@ -1713,7 +1713,7 @@ button:disabled{opacity:.55;cursor:wait}
 
   /* ---------- Tablas: revisión de anchos (99 %, porcentajes, última columna sin ancho) ---------- */
   const TB = { html: '', tablas: [] };
-  $('#btnTablas').onclick = async () => {
+  const abrirTablas = async () => {
     if (saveT) await guardarYa();
     document.body.classList.remove('en-prod'); document.body.classList.add('en-tablas'); window.scrollTo(0, 0);
     $('#tbEntrada').focus();
