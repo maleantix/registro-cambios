@@ -132,7 +132,7 @@ body.sin-registro #editor,body.sin-registro .bar{display:none}
 #prod .estado-nube:hover{background:#eee;color:inherit}
 #prod .estado-nube.pend{color:#8a4300;font-weight:700}
 header .actions button.actual{background:#fff3e3;border-color:var(--ac);font-weight:700}
-body.en-prod #btnNube,body.en-prod #btnExport,body.en-prod label.btn[title^="Carga"]{display:none}
+body.en-prod #btnNube,body.en-prod #btnExport,body.en-prod label.btn[title^="Carga"],body.en-tablas #btnNube,body.en-tablas #btnExport,body.en-tablas label.btn[title^="Carga"]{display:none}
 header .actions{position:relative}
 .menu-herr{position:relative;display:inline-block}
 #menuHerr{position:absolute;right:0;top:calc(100% + 6px);min-width:210px;background:#fff;border:1px solid var(--bd);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.15);padding:6px;z-index:50}
@@ -149,12 +149,31 @@ header .actions{position:relative}
 #dlgEnlaces{min-width:min(760px,92vw)}
 #prod{display:none}
 body.en-prod #prod{display:block}
-body.en-prod #inicio,body.en-prod #editor,body.en-prod .bar{display:none}
+body.en-prod #inicio,body.en-prod #editor,body.en-prod .bar,body.en-tablas #inicio,body.en-tablas #editor,body.en-tablas .bar,body.en-tablas #prod,body.en-prod #tablas{display:none}
+#tablas{display:none}
+body.en-tablas #tablas{display:block}
 #prod .phead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 #prod .phead h2{margin:0 12px 0 0;font-size:20px}
 #prod .phead input[type=date]{width:auto}
-body.en-prod .layout{grid-template-columns:1fr;max-width:1500px}
-body.en-prod aside{display:none}
+body.en-prod .layout,body.en-tablas .layout{grid-template-columns:1fr;max-width:1500px}
+body.en-prod aside,body.en-tablas aside{display:none}
+#tablas h2{margin:0 12px 0 0;font-size:20px}
+.tb-opc{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin:10px 0}
+.tb-opc label{display:flex;flex-direction:column;gap:3px;font-size:14px}
+.tb-opc label.inline{flex-direction:row;align-items:center;gap:6px}
+.tb-opc input[type=number]{width:80px}
+#tbEntrada,#tbSalida{width:100%;font-family:Consolas,monospace;font-size:13px;min-height:130px}
+.tb-card{border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin:12px 0;background:#fff}
+.tb-card h3{margin:0 0 6px;font-size:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tb-prob{margin:6px 0 10px 18px;padding:0;font-size:14px}
+.tb-cols{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.tb-col{display:flex;flex-direction:column;gap:3px;font-size:13px;min-width:110px;max-width:170px}
+.tb-col .tb-nom{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-col input{width:84px;padding:6px 7px;font-size:15px}
+.tb-col.ultima .tb-resto{padding:7px 0;font-size:14px;color:var(--mut)}
+.tb-suma{margin:8px 0 0;font-size:14px}
+.tb-acc{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}
+#tbVista{width:100%;height:380px;border:1px solid var(--bd);border-radius:8px;background:#fff;resize:vertical}
 #prodTabla{width:100%;border-collapse:collapse;font-size:15px}
 #prodTabla td.c-tar select{min-width:170px;max-width:190px}
 #prodTabla td.c-con input{min-width:150px}
@@ -263,6 +282,7 @@ button:disabled{opacity:.55;cursor:wait}
   <div class="actions">
     <button id="btnNuevo" class="primary">+ Nuevo proceso</button>
     <button id="btnProc" title="Lista de procesos, buscador y registros por fecha">📁 Procesos</button>
+    <button id="btnTablas" title="Revisa los anchos de tus tablas HTML (99 %, porcentajes, última columna sin ancho)">📐 Tablas</button>
     <button id="btnProd" title="Tu registro diario de tareas y minutos (Productividad)">📊 Productividad</button>
     <span class="menu-herr"><button id="btnHerr" title="Tus otras herramientas (se abren en una ventana nueva)" aria-haspopup="true" aria-expanded="false">🔗 Herramientas ▾</button>
       <div id="menuHerr" role="menu" hidden></div></span>
@@ -317,6 +337,20 @@ button:disabled{opacity:.55;cursor:wait}
       <p class="pnota">Al pulsar «⏱ Generar código» en un proceso, la fila de hoy se crea sola con el ID, el nombre, el código y la hora de inicio. Tú solo apuntas los minutos. Los viernes la jornada empieza en 420 min (7 h); puedes cambiarla en cualquier día.</p>
       <h3 style="margin:18px 0 4px;font-size:16px">Últimos días</h3>
       <table id="prodResumen"><thead><tr><th>Día</th><th>Minutos</th><th>Horas</th><th>Jornada</th><th>Estado</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section id="tablas" class="card">
+      <div class="phead"><h2>📐 Tablas</h2><span class="ayuda">Pega el HTML, revisa los anchos y copia el código corregido.</span></div>
+      <p class="pnota" style="margin-top:0"><b>Norma que se revisa:</b> tabla al 99 %, anchos solo en la primera fila y siempre en %, y la última columna sin ancho. No se toca nada más del código.</p>
+      <textarea id="tbEntrada" rows="9" spellcheck="false" placeholder="Pega aquí el código HTML (una tabla o la página entera)…"></textarea>
+      <div class="tb-opc">
+        <button id="tbRevisar" class="primary">Revisar tablas</button>
+        <label>Ancho de la tabla <input id="tbAncho" type="number" value="99" min="1" max="100" step="1"></label>
+        <label>Formato del ancho <select id="tbFmt"><option value="auto">Detectar el que usas</option><option value="style">style="width:20%"</option><option value="attr">width="20%"</option></select></label>
+        <label class="inline"><input type="checkbox" id="tbOtras"> Quitar también los anchos de las demás filas</label>
+        <button id="tbLimpiar">Limpiar</button>
+      </div>
+      <div id="tbResultado"></div>
     </section>
 
     <div id="editor">
@@ -491,6 +525,7 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>Editar o quitar filas</dt><dd>Todos los campos de cada fila se pueden modificar y la ✕ la quita (pide confirmación). Cada día se puede abrir con ◀ ▶ o el calendario.</dd>
       <dt>⬇ Exportar Excel</dt><dd>Descarga un .xlsx con el mismo formato que tu Excel (Día, Tarea, ID, Contenido, Código, Url, Inicio, Tiempo parcial, Minutos Totales, Horas Empleadas) para el periodo que elijas, o todo el histórico. También hay CSV.</dd>
       <dt>🔗 Herramientas</dt><dd>Menú con accesos directos a Pongo datos, Gestión de procesos, Listadis y Saca ID. Cada una se abre en una ventana nueva. En «⚙ Gestionar enlaces…», al final del menú, puedes añadir, quitar, renombrar y ordenar tus enlaces (se guardan en este navegador).</dd>
+      <dt>📐 Tablas</dt><dd>Revisa los anchos de tus tablas HTML. Pegas el código y comprueba: tabla al 99 %, anchos solo en la primera fila y en %, y la última columna sin ancho. Si ya hay porcentajes válidos los respeta; si no, reparte a partes iguales. Puedes cambiar cualquier porcentaje y ver el resultado, y «Copiar HTML corregido» te da el código listo. Solo toca los anchos; el resto del código queda igual.</dd>
       <dt>⤓ Completar</dt><dd>Pone en esa fila los minutos que faltan para llegar a la jornada (como tu fila de relleno).</dd>
       <dt>+ Descanso (60 min)</dt><dd>Añade la fila de descanso.</dd>
       <dt>↗</dt><dd>Abre el registro del proceso al que pertenece la fila.</dd>
@@ -828,7 +863,7 @@ button:disabled{opacity:.55;cursor:wait}
   }
   function abrirRegistro(p, m) {
     proc = p; lastEid = null; lastGid = null; snap = foto(p);
-    document.body.classList.remove('sin-registro', 'en-prod');
+    document.body.classList.remove('sin-registro', 'en-prod', 'en-tablas');
     document.querySelectorAll('[data-p]').forEach(el => { el.value = proc[el.dataset.p] || ''; });
     autosize($('#pNotas'));
     setModo(m); renderLista(); pintarEstado();
@@ -841,7 +876,7 @@ button:disabled{opacity:.55;cursor:wait}
     if (saveT) await guardarYa();
     const p = proc, eraEdicion = modo === 'edicion';
     proc = null; modo = 'lectura';
-    document.body.classList.add('sin-registro'); document.body.classList.remove('lectura', 'en-prod');
+    document.body.classList.add('sin-registro'); document.body.classList.remove('lectura', 'en-prod', 'en-tablas');
     await descartarSiVacio(p);
     renderLista(); pintarEstado();
     if (eraEdicion) autoSubir(p);
@@ -1488,7 +1523,7 @@ button:disabled{opacity:.55;cursor:wait}
   async function abrirDia(iso) { dia = await leerDia(iso); pintarDia(); }
   async function abrirProductividad() {
     if (saveT) await guardarYa();
-    document.body.classList.add('en-prod');
+    document.body.classList.remove('en-tablas'); document.body.classList.add('en-prod');
     window.scrollTo(0, 0);
     await abrirDia(hoy());
     await traerDiasNube();
@@ -1541,10 +1576,10 @@ button:disabled{opacity:.55;cursor:wait}
   });
   document.addEventListener('click', ev => { if (!menuH.hidden && !ev.target.closest('.menu-herr')) cerrarMenuH(); });
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape') cerrarMenuH(); });
-  $('#btnProc').onclick = async () => { if (document.body.classList.contains('en-prod')) { document.body.classList.remove('en-prod'); window.scrollTo(0, 0); } else if (proc) await irInicio(); };
+  $('#btnProc').onclick = async () => { if (document.body.classList.contains('en-prod') || document.body.classList.contains('en-tablas')) { document.body.classList.remove('en-prod', 'en-tablas'); window.scrollTo(0, 0); } else if (proc) await irInicio(); };
   new MutationObserver(() => {
-    const en = document.body.classList.contains('en-prod');
-    $('#btnProd').classList.toggle('actual', en); $('#btnProc').classList.toggle('actual', !en);
+    const en = document.body.classList.contains('en-prod'), et = document.body.classList.contains('en-tablas');
+    $('#btnProd').classList.toggle('actual', en); $('#btnTablas').classList.toggle('actual', et); $('#btnProc').classList.toggle('actual', !en && !et);
   }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   $('#btnProc').classList.add('actual');
   $('#btnInicioProd').onclick = abrirProductividad;
@@ -1674,6 +1709,152 @@ button:disabled{opacity:.55;cursor:wait}
     descargar(csvProd(ds), 'Productividad_' + ($('#epDesde').value || ds[0].id) + '_' + ($('#epHasta').value || ds[ds.length - 1].id) + '.csv');
     $('#dlgExpProd').close(); toast('CSV descargado ✓');
   };
+
+
+  /* ---------- Tablas: revisión de anchos (99 %, porcentajes, última columna sin ancho) ---------- */
+  const TB = { html: '', tablas: [] };
+  $('#btnTablas').onclick = async () => {
+    if (saveT) await guardarYa();
+    document.body.classList.remove('en-prod'); document.body.classList.add('en-tablas'); window.scrollTo(0, 0);
+    $('#tbEntrada').focus();
+  };
+  const tbEsPct = v => /^\d+(\.\d+)?%$/.test((v || '').replace(/\s/g, ''));
+  const tbNorm = v => (v || '').replace(/\s/g, '').toLowerCase();
+  function tbLeerAncho(tag) {
+    let attr = null, st = null;
+    const a = /\swidth\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(tag);
+    if (a) attr = (a[1] ?? a[2] ?? a[3] ?? '').trim();
+    const m = /\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag);
+    if (m) { const w = (m[1] ?? m[2] ?? '').split(';').map(x => x.trim()).find(x => /^width\s*:/i.test(x)); if (w) st = w.replace(/^width\s*:/i, '').trim(); }
+    return { attr, style: st, valor: st ?? attr };
+  }
+  function tbQuitarAncho(tag) {
+    tag = tag.replace(/\swidth\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/ig, '');
+    return tag.replace(/(\sstyle\s*=\s*)(["'])([^"']*)\2/i, (all, pre, q, d) => {
+      const css = d.split(';').map(x => x.trim()).filter(x => x && !/^width\s*:/i.test(x)).join(';');
+      return css ? `${pre}${q}${css};${q}` : '';
+    });
+  }
+  function tbPonerAncho(tag, v, fmt) {
+    tag = tbQuitarAncho(tag);
+    const cierre = /\s*\/?>$/.exec(tag)[0], base = tag.slice(0, tag.length - cierre.length);
+    if (fmt === 'attr') return base + ` width="${v}"` + cierre;
+    if (/\sstyle\s*=\s*["']/i.test(base)) return base.replace(/(\sstyle\s*=\s*)(["'])([^"']*)\2/i, (a, pre, q, d) => `${pre}${q}${d.trim().replace(/;$/, '')}; width: ${v};${q}`) + cierre;
+    return base + ` style="width: ${v};"` + cierre;
+  }
+  const tbTexto = h => { const d = document.createElement('textarea'); d.innerHTML = h.replace(/<[^>]*>/g, ' '); return d.value.replace(/\s+/g, ' ').trim(); };
+  function tbAnalizar(html) {
+    const re = /<(\/?)table\b[^>]*>/gi, pila = [], todas = []; let m;
+    while ((m = re.exec(html))) {
+      if (!m[1]) pila.push({ ini: m.index, finTag: m.index + m[0].length, tag: m[0] });
+      else { const a = pila.pop(); if (a) todas.push({ ...a, cierre: m.index, fin: m.index + m[0].length }); }
+    }
+    todas.sort((a, b) => a.ini - b.ini);
+    return todas.map((t, k) => {
+      let inner = html.slice(t.finTag, t.cierre).split('');
+      todas.forEach(o => { if (o !== t && o.ini >= t.finTag && o.fin <= t.cierre) for (let x = o.ini - t.finTag; x < o.fin - t.finTag; x++) inner[x] = ' '; });
+      inner = inner.join('');
+      const r = { n: k + 1, t, celdas: [], otras: [], avisos: [], sinFilas: false };
+      const trm = /<tr\b[^>]*>/i.exec(inner);
+      if (!trm) { r.sinFilas = true; return r; }
+      const filaIni = trm.index + trm[0].length;
+      const rel = inner.slice(filaIni).search(/<\/tr\s*>|<tr\b/i);
+      const filaFin = rel < 0 ? inner.length : filaIni + rel;
+      const seg = inner.slice(filaIni, filaFin), cre = /<(td|th)\b[^>]*>/gi; let c; const pos = [];
+      while ((c = cre.exec(seg))) pos.push({ ini: t.finTag + filaIni + c.index, tag: c[0], rel: c.index });
+      pos.forEach((q, i) => {
+        const hasta = i + 1 < pos.length ? pos[i + 1].rel : seg.length;
+        const cs = /\scolspan\s*=\s*["']?(\d+)/i.exec(q.tag);
+        r.celdas.push({ ini: q.ini, fin: q.ini + q.tag.length, tag: q.tag, nombre: tbTexto(html.slice(q.ini + q.tag.length, t.finTag + filaIni + hasta)).slice(0, 40) || '(vacía)', colspan: cs ? Number(cs[1]) : 1 });
+      });
+      const resto = inner.slice(filaFin), ore = /<(td|th)\b[^>]*>/gi; let o;
+      while ((o = ore.exec(resto))) if (tbLeerAncho(o[0]).valor) r.otras.push({ ini: t.finTag + filaFin + o.index, fin: t.finTag + filaFin + o.index + o[0].length, tag: o[0] });
+      if (/<col(group)?\b/i.test(inner)) r.avisos.push('Tiene <colgroup>/<col>: esta herramienta solo mira las celdas de la primera fila.');
+      if (r.celdas.some(x => x.colspan > 1)) r.avisos.push('La primera fila tiene celdas con colspan: revisa el resultado a mano.');
+      // formato detectado y reparto inicial
+      const usos = [t.tag, ...r.celdas.map(x => x.tag)].map(tbLeerAncho);
+      r.fmtDet = usos.some(u => u.attr) && !usos.some(u => u.style) ? 'attr' : 'style';
+      const n = r.celdas.length;
+      r.problemas = [];
+      const tw = tbLeerAncho(t.tag).valor;
+      if (!tw) r.problemas.push('La tabla no tiene ancho.');
+      else if (!tbEsPct(tw)) r.problemas.push(`El ancho de la tabla es «${tw}» (debe ser en %).`);
+      r.actual = r.celdas.map((x, i) => tbLeerAncho(x.tag).valor || '');
+      r.celdas.forEach((x, i) => {
+        const w = r.actual[i];
+        if (i < n - 1) { if (!w) r.problemas.push(`«${x.nombre}»: no tiene ancho.`); else if (!tbEsPct(w)) r.problemas.push(`«${x.nombre}»: ancho «${w}» (debe ser en %).`); }
+        else if (w) r.problemas.push(`La última columna («${x.nombre}») lleva ancho «${w}» y no debe llevarlo.`);
+      });
+      if (r.otras.length) r.problemas.push(`${r.otras.length} celda${r.otras.length > 1 ? 's' : ''} de otras filas llevan ancho (solo debe ir en la primera fila).`);
+      const exist = r.actual.slice(0, n - 1);
+      const validos = n > 1 && exist.every(tbEsPct) && exist.reduce((a, v) => a + parseFloat(v), 0) <= 99.0001;
+      r.pct = validos ? exist.map(v => parseFloat(v)) : tbIgual(n);
+      return r;
+    });
+  }
+  const tbIgual = n => n > 1 ? Array(n - 1).fill(Math.round(100 / n)) : [];
+  function tbGenerar() {
+    const fmtSel = $('#tbFmt').value, aT = (parseFloat($('#tbAncho').value) || 99) + '%', quitarOtras = $('#tbOtras').checked, edits = [];
+    TB.tablas.forEach(r => {
+      if (r.sinFilas) { r.cambios = 0; return; }
+      const fmt = fmtSel === 'auto' ? r.fmtDet : fmtSel, antes = edits.length, n = r.celdas.length;
+      if (tbNorm(tbLeerAncho(r.t.tag).valor) !== tbNorm(aT)) edits.push({ ini: r.t.ini, fin: r.t.finTag, txt: tbPonerAncho(r.t.tag, aT, fmt) });
+      r.celdas.forEach((x, i) => {
+        const w = tbLeerAncho(x.tag).valor;
+        if (i < n - 1) { const v = (r.pct[i] || 0) + '%'; if (tbNorm(w) !== tbNorm(v)) edits.push({ ini: x.ini, fin: x.fin, txt: tbPonerAncho(x.tag, v, fmt) }); }
+        else if (w) edits.push({ ini: x.ini, fin: x.fin, txt: tbQuitarAncho(x.tag) });
+      });
+      if (quitarOtras) r.otras.forEach(x => edits.push({ ini: x.ini, fin: x.fin, txt: tbQuitarAncho(x.tag) }));
+      r.cambios = edits.length - antes;
+    });
+    let out = TB.html;
+    edits.sort((a, b) => b.ini - a.ini).forEach(e => { out = out.slice(0, e.ini) + e.txt + out.slice(e.fin); });
+    TB.salida = out;
+    const sal = $('#tbSalida'); if (sal) sal.value = out;
+    TB.tablas.forEach(r => {
+      const chip = document.querySelector(`#tbCard${r.n} .pestado`); if (!chip) return;
+      chip.className = 'pestado ' + (r.cambios ? 'falta' : 'ok');
+      chip.textContent = r.sinFilas ? '▼ Sin filas' : r.cambios ? `▼ Se corrigen ${r.cambios} etiqueta${r.cambios > 1 ? 's' : ''}` : '✔ Cumple la norma';
+      const suma = r.pct.reduce((a, v) => a + (Number(v) || 0), 0), tw = parseFloat(aT);
+      const el = document.querySelector(`#tbCard${r.n} .tb-suma`);
+      if (el) el.textContent = `Suma de las columnas con ancho: ${Math.round(suma * 100) / 100} %. La última ocupa el resto (≈ ${Math.max(0, Math.round((tw - suma) * 100) / 100)} %)` + (suma > tw ? ' ⚠ pasa del ancho de la tabla' : '') + '.';
+    });
+    const tot = edits.length, rs = $('#tbResumen'); if (rs) rs.textContent = tot ? `${tot} etiqueta${tot > 1 ? 's' : ''} corregida${tot > 1 ? 's' : ''}.` : '✔ No hay nada que corregir.';
+    const v = $('#tbVista'); if (v) v.srcdoc = '<style>body{font:14px Arial,sans-serif;margin:8px}table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:4px}</style>' + out;
+  }
+  function tbPintar() {
+    const cont = $('#tbResultado');
+    if (!TB.tablas.length) { cont.innerHTML = '<p class="pnota">No he encontrado ninguna etiqueta &lt;table&gt; en ese código.</p>'; return; }
+    cont.innerHTML = TB.tablas.map(r => {
+      const n = r.celdas.length;
+      const cols = r.celdas.map((x, i) => i < n - 1
+        ? `<label class="tb-col"><span class="tb-nom" title="${esc(x.nombre)}">${esc(x.nombre)}</span><span><input type="number" min="0" max="100" step="1" data-tb="${r.n - 1}:${i}" value="${r.pct[i]}"> %</span></label>`
+        : `<div class="tb-col ultima"><span class="tb-nom" title="${esc(x.nombre)}">${esc(x.nombre)}</span><span class="tb-resto">sin ancho (resto)</span></div>`).join('');
+      return `<div class="tb-card" id="tbCard${r.n}"><h3>Tabla ${r.n} · ${n} columna${n === 1 ? '' : 's'} <span class="pestado ok"></span></h3>
+        ${r.problemas && r.problemas.length ? '<ul class="tb-prob">' + r.problemas.map(p => `<li>${esc(p)}</li>`).join('') + '</ul>' : ''}
+        ${r.avisos.map(a => `<p class="pnota">⚠ ${esc(a)}</p>`).join('')}
+        ${r.sinFilas ? '<p class="pnota">Esta tabla no tiene filas.</p>' : `<div class="tb-cols">${cols}</div><p class="tb-suma"></p><div class="tb-acc"><button data-tbigual="${r.n - 1}">Repartir igual</button></div>`}</div>`;
+    }).join('') + `<h3 style="margin:18px 0 4px;font-size:16px">HTML corregido</h3>
+      <div class="tb-acc"><button id="tbCopiar" class="primary">📋 Copiar HTML corregido</button><span id="tbResumen" class="ayuda"></span></div>
+      <textarea id="tbSalida" readonly spellcheck="false"></textarea>
+      <h3 style="margin:18px 0 4px;font-size:16px">Vista previa <span class="ayuda" style="font-weight:400">(orientativa: no lleva los estilos de tu portal)</span></h3>
+      <iframe id="tbVista" sandbox="allow-same-origin"></iframe>`;
+    tbGenerar();
+  }
+  function tbRevisar() { TB.html = $('#tbEntrada').value; TB.tablas = TB.html.trim() ? tbAnalizar(TB.html) : []; if (!TB.html.trim()) { $('#tbResultado').innerHTML = ''; toast('Pega primero el código HTML', true); return; } tbPintar(); }
+  $('#tbRevisar').onclick = tbRevisar;
+  $('#tbEntrada').addEventListener('paste', () => setTimeout(tbRevisar, 50));
+  $('#tbLimpiar').onclick = () => { $('#tbEntrada').value = ''; $('#tbResultado').innerHTML = ''; TB.tablas = []; $('#tbEntrada').focus(); };
+  $('#tbFmt').onchange = $('#tbAncho').oninput = $('#tbOtras').onchange = () => { if (TB.tablas.length) tbGenerar(); };
+  $('#tbResultado').addEventListener('input', ev => {
+    const k = ev.target.dataset && ev.target.dataset.tb; if (!k) return;
+    const [t, i] = k.split(':').map(Number); TB.tablas[t].pct[i] = parseFloat(ev.target.value) || 0; tbGenerar();
+  });
+  $('#tbResultado').addEventListener('click', async ev => {
+    const ig = ev.target.closest('[data-tbigual]');
+    if (ig) { const r = TB.tablas[Number(ig.dataset.tbigual)]; r.pct = tbIgual(r.celdas.length); r.pct.forEach((v, i) => { const inp = document.querySelector(`[data-tb="${r.n - 1}:${i}"]`); if (inp) inp.value = v; }); tbGenerar(); return; }
+    if (ev.target.closest('#tbCopiar')) { try { await navigator.clipboard.writeText(TB.salida || ''); toast('HTML corregido copiado ✓'); } catch (e) { $('#tbSalida').select(); toast('No se pudo copiar solo; pulsa Ctrl+C', true); } }
+  });
 
   /* ---- añadir a productividad desde el proceso ---- */
   async function filaDeProceso(iso) {
