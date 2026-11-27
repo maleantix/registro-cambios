@@ -1878,14 +1878,14 @@ button:disabled{opacity:.55;cursor:wait}
     }).join('') + `<h3 style="margin:18px 0 4px;font-size:16px">HTML corregido</h3>
       <div class="tb-acc"><button id="tbCopiar" class="primary">📋 Copiar HTML corregido</button><span id="tbResumen" class="ayuda"></span></div>
       <textarea id="tbSalida" readonly spellcheck="false"></textarea>
-      <h3 style="margin:18px 0 4px;font-size:16px">Vista previa <span class="ayuda" style="font-weight:400">(orientativa: no lleva los estilos de tu portal)</span></h3>
+      <h3 style="margin:18px 0 4px;font-size:16px">Vista previa <span class="ayuda" style="font-weight:400">(aproximada: usa los estilos de tu portal que has configurado)</span></h3>
       <iframe id="tbVista" sandbox="allow-same-origin"></iframe>`;
     tbGenerar();
   }
   function tbRevisar() { TB.html = $('#tbEntrada').value; TB.tablas = TB.html.trim() ? tbAnalizar(TB.html) : []; if (!TB.html.trim()) { $('#tbResultado').innerHTML = ''; toast('Pega primero el código HTML', true); return; } tbPintar(); }
   $('#tbRevisar').onclick = tbRevisar;
   $('#tbEntrada').addEventListener('paste', () => setTimeout(tbRevisar, 50));
-  const TB_CSS = 'body{font:14px Arial,sans-serif;margin:8px;color:#333}\ntable{border-collapse:collapse}\ntd,th{padding:4px 6px;vertical-align:top}\ntable.tinyTablaEncNaranja th,table.tinyTablaEncNaranja td{border:1px solid #999999}\ntable.tinyTablaEncNaranja th,table.tinyTablaEncNaranja thead td{background-color:#ff7900;color:#ffffff;font-weight:bold}\ntable.tinyTablaEncNaranja td{color:#000000;font-weight:normal}\ntable.tinyTablaEncNaranja thead td{color:#ffffff;font-weight:bold}';
+  const TB_CSS = 'body{font:14px Arial,sans-serif;margin:8px;color:#333}\ntable{border-collapse:collapse}\ntd,th{padding:4px 6px;vertical-align:middle}\ntable.tinyTablaEncNaranja th,table.tinyTablaEncNaranja td{border:1px solid #999999}\ntable.tinyTablaEncNaranja th,table.tinyTablaEncNaranja thead td{background-color:#ff7900;color:#ffffff;font-weight:bold}\ntable.tinyTablaEncNaranja td{color:#000000;font-weight:normal}\ntable.tinyTablaEncNaranja thead td{color:#ffffff;font-weight:bold}';
   const tbCssActual = () => { let v = ''; try { v = localStorage.getItem('rc-tbcss') || ''; } catch (e) {} return v.trim() ? v : TB_CSS; };
   $('#tbCss').value = tbCssActual();
   $('#tbCss').oninput = () => { try { localStorage.setItem('rc-tbcss', $('#tbCss').value); } catch (e) {} if ($('#tbVista') && $('#tbEntrada').value.trim()) tbRevisar(); };
