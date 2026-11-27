@@ -162,6 +162,18 @@ body.en-prod aside,body.en-tablas aside{display:none}
 .tb-opc label{display:flex;flex-direction:column;gap:3px;font-size:14px}
 .tb-opc label.inline{flex-direction:row;align-items:center;gap:6px}
 .tb-opc input[type=number]{width:80px}
+#tnDet{border:1px solid var(--bd);border-radius:10px;margin:10px 0 14px;background:#fff}
+#tnDet>summary{cursor:pointer;padding:12px 14px;font-weight:700;font-size:16px}
+.tn-cuerpo{padding:0 14px 14px}
+.tn-lab{display:flex;flex-direction:column;gap:3px;font-size:14px}
+.tn-fila{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin:10px 0}
+#tnEjemplo{width:100%;font-family:Consolas,monospace;font-size:13px}
+#tnDet.arrastrando{outline:3px dashed var(--ac)}
+#tnVista{max-width:100%;border:1px solid var(--bd);border-radius:8px;margin:8px 0}
+.tn-rej{width:100%;border-collapse:collapse;margin:8px 0}
+.tn-rej td{border:1px solid #999;padding:3px;vertical-align:top}
+.tn-rej td.cab{background:#fff3e3}
+.tn-rej textarea{width:100%;min-height:38px;font-size:14px;border:none;background:transparent;resize:vertical}
 #tbEntrada,#tbSalida{width:100%;font-family:Consolas,monospace;font-size:13px;min-height:130px}
 .tb-card{border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin:12px 0;background:#fff}
 .tb-card h3{margin:0 0 6px;font-size:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -341,6 +353,27 @@ button:disabled{opacity:.55;cursor:wait}
     <section id="tablas" class="card">
       <div class="phead"><h2>📐 Tablas</h2><span class="ayuda">Pega el HTML, revisa los anchos y copia el código corregido.</span></div>
       <p class="pnota" style="margin-top:0"><b>Norma que se revisa:</b> tabla al 99 %, anchos solo en la primera fila y siempre en %, y la última columna sin ancho. No se toca nada más del código.</p>
+      <details id="tnDet" class="tn-det">
+        <summary>➕ Crear una tabla nueva desde una imagen</summary>
+        <div class="tn-cuerpo">
+          <p class="pnota" style="margin-top:0">1) Pega una tabla de ejemplo para copiar su estilo (opcional). 2) Elige o pega con Ctrl+V la imagen de la tabla nueva, recortada para que solo se vea la tabla con sus líneas. 3) Se detectan filas, columnas y celdas combinadas; rellenas el texto y generas el HTML. La imagen no sale de tu ordenador.</p>
+          <label class="tn-lab">Tabla de ejemplo (HTML, para copiar su estilo)<textarea id="tnEjemplo" rows="4" spellcheck="false" placeholder="Pega aquí una tabla que ya tenga el estilo que quieres (clase, cabecera, etc.)…"></textarea></label>
+          <div class="tn-fila">
+            <label class="btn primary-ish" id="tnElegir">📷 Elegir imagen<input type="file" id="tnArchivo" accept="image/*" hidden></label>
+            <span class="ayuda">o pégala con Ctrl+V, o arrástrala a esta zona</span>
+          </div>
+          <div class="tn-fila">
+            <label class="tn-lab">Filas de cabecera <input type="number" id="tnCab" value="1" min="0" max="5"></label>
+            <label class="tn-lab">Sensibilidad de líneas <input type="range" id="tnSens" min="15" max="150" value="45"></label>
+            <button id="tnDetectar" type="button">Detectar de nuevo</button>
+            <span class="ayuda">¿Sin imagen? Cuadrícula en blanco:</span>
+            <input type="number" id="tnFil" value="3" min="1" max="60" style="width:64px"> filas ×
+            <input type="number" id="tnCol" value="3" min="1" max="12" style="width:64px"> columnas
+            <button id="tnBlanco" type="button">Crear</button>
+          </div>
+          <div id="tnZona"></div>
+        </div>
+      </details>
       <textarea id="tbEntrada" rows="9" spellcheck="false" placeholder="Pega aquí el código HTML (una tabla o la página entera)…"></textarea>
       <div class="tb-opc">
         <button id="tbRevisar" class="primary">Revisar tablas</button>
@@ -525,6 +558,7 @@ button:disabled{opacity:.55;cursor:wait}
       <dt>⬇ Exportar Excel</dt><dd>Descarga un .xlsx con el mismo formato que tu Excel (Día, Tarea, ID, Contenido, Código, Url, Inicio, Tiempo parcial, Minutos Totales, Horas Empleadas) para el periodo que elijas, o todo el histórico. También hay CSV.</dd>
       <dt>🔗 Herramientas</dt><dd>Menú con accesos directos a Pongo datos, Gestión de procesos, Listadis y Saca ID. «📐 Revisar tablas» (primera opción) abre aquí dentro la revisión de anchos de tablas. Los demás enlaces se abren cada uno en una ventana nueva. En «⚙ Gestionar enlaces…», al final del menú, puedes añadir, quitar, renombrar y ordenar tus enlaces (se guardan en este navegador).</dd>
       <dt>🔗 Herramientas → 📐 Revisar tablas</dt><dd>Revisa los anchos de tus tablas HTML (se abre desde el menú 🔗 Herramientas). Pegas el código y comprueba: tabla al 99 %, anchos solo en la primera fila y en %, y la última columna sin ancho. Si ya hay porcentajes válidos los respeta; si no, reparte a partes iguales. Puedes cambiar cualquier porcentaje y ver el resultado, y «Copiar HTML corregido» te da el código listo. Solo toca los anchos; el resto del código queda igual.</dd>
+      <dt>➕ Crear una tabla nueva desde una imagen</dt><dd>Dentro de Tablas: pegas una tabla de ejemplo (para copiar su estilo) y subes o pegas con Ctrl+V la imagen de la tabla nueva, recortada para que solo se vea la tabla con sus líneas. La herramienta detecta filas, columnas y celdas combinadas; tú rellenas el texto y «Generar HTML» te da la tabla con tu estilo y los anchos de la norma. La imagen no sale de tu ordenador. También puedes empezar con una cuadrícula en blanco.</dd>
       <dt>⤓ Completar</dt><dd>Pone en esa fila los minutos que faltan para llegar a la jornada (como tu fila de relleno).</dd>
       <dt>+ Descanso (60 min)</dt><dd>Añade la fila de descanso.</dd>
       <dt>↗</dt><dd>Abre el registro del proceso al que pertenece la fila.</dd>
@@ -1760,6 +1794,7 @@ button:disabled{opacity:.55;cursor:wait}
       const filaIni = trm.index + trm[0].length;
       const rel = inner.slice(filaIni).search(/<\/tr\s*>|<tr\b/i);
       const filaFin = rel < 0 ? inner.length : filaIni + rel;
+      r.filaFin = t.finTag + filaFin;
       const seg = inner.slice(filaIni, filaFin), cre = /<(td|th)\b[^>]*>/gi; let c; const pos = [];
       while ((c = cre.exec(seg))) pos.push({ ini: t.finTag + filaIni + c.index, tag: c[0], rel: c.index });
       pos.forEach((q, i) => {
@@ -1855,6 +1890,151 @@ button:disabled{opacity:.55;cursor:wait}
     if (ig) { const r = TB.tablas[Number(ig.dataset.tbigual)]; r.pct = tbIgual(r.celdas.length); r.pct.forEach((v, i) => { const inp = document.querySelector(`[data-tb="${r.n - 1}:${i}"]`); if (inp) inp.value = v; }); tbGenerar(); return; }
     if (ev.target.closest('#tbCopiar')) { try { await navigator.clipboard.writeText(TB.salida || ''); toast('HTML corregido copiado ✓'); } catch (e) { $('#tbSalida').select(); toast('No se pudo copiar solo; pulsa Ctrl+C', true); } }
   });
+
+
+  /* ---------- Crear tabla nueva desde una imagen ---------- */
+  const TN = { img: null, grupos: [], R: 0, C: 0 };
+  const tnNoAscii = t => t.replace(/[^\x00-\x7f]/g, ch => ({ 'á': '&aacute;', 'é': '&eacute;', 'í': '&iacute;', 'ó': '&oacute;', 'ú': '&uacute;', 'Á': '&Aacute;', 'É': '&Eacute;', 'Í': '&Iacute;', 'Ó': '&Oacute;', 'Ú': '&Uacute;', 'ñ': '&ntilde;', 'Ñ': '&Ntilde;', 'ü': '&uuml;', 'Ü': '&Uuml;', '¿': '&iquest;', '¡': '&iexcl;', 'º': '&ordm;', 'ª': '&ordf;', '€': '&euro;', ' ': '&nbsp;' }[ch] || '&#' + ch.codePointAt(0) + ';'));
+  const tnTexto = t => { t = (t || '').trim(); if (!t) return '&nbsp;'; return tnNoAscii(t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')).replace(/\r?\n/g, '<br />'); };
+
+  // cobertura: longitud cubierta por tramos continuos de bordes de al menos minRun píxeles (tolera huecos de 1 px)
+  function tnCobertura(n, get, minRun) {
+    let cov = 0, run = 0, miss = 0;
+    for (let k = 0; k < n; k++) {
+      if (get(k)) { run += 1 + miss; miss = 0; }
+      else if (run) { miss++; if (miss > 1) { if (run >= minRun) cov += run; run = 0; miss = 0; } }
+    }
+    if (run >= minRun) cov += run; return cov;
+  }
+  function tnCandidatos(score, umbral, sep) {
+    const cl = []; let i = 0;
+    while (i < score.length) {
+      if (score[i] >= umbral) {
+        let j = i, best = i, sw = 0, sx = 0;
+        while (j + 1 < score.length && (score[j + 1] >= umbral || (j + 2 < score.length && score[j + 2] >= umbral))) { j++; }
+        for (let k = i; k <= j; k++) { sw += score[k]; sx += score[k] * k; if (score[k] > score[best]) best = k; }
+        cl.push({ pos: sw ? Math.round(sx / sw) : best, score: score[best] }); i = j + 1;
+      } else i++;
+    }
+    const fin = [];   // separación mínima entre líneas: se queda la más marcada
+    cl.forEach(c => { const u = fin[fin.length - 1]; if (u && c.pos - u.pos < sep) { if (c.score > u.score) fin[fin.length - 1] = c; } else fin.push(c); });
+    return fin.map(c => c.pos);
+  }
+  function tnDetectar() {
+    const img = TN.img; if (!img) return false;
+    const thr = Number($('#tnSens').value) || 45;
+    const esc = img.naturalWidth > 1400 ? 1400 / img.naturalWidth : 1, w = Math.round(img.naturalWidth * esc), h = Math.round(img.naturalHeight * esc);
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    const cx = cv.getContext('2d', { willReadFrequently: true }); cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(img, 0, 0, w, h);
+    const d = cx.getImageData(0, 0, w, h).data, V = new Uint8Array(w * h), Hh = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (x > 0 && Math.abs(d[i] - d[i - 4]) + Math.abs(d[i + 1] - d[i - 3]) + Math.abs(d[i + 2] - d[i - 2]) > thr) V[y * w + x] = 1;
+      if (y > 0 && Math.abs(d[i] - d[i - w * 4]) + Math.abs(d[i + 1] - d[i - w * 4 + 1]) + Math.abs(d[i + 2] - d[i - w * 4 + 2]) > thr) Hh[y * w + x] = 1;
+    }
+    const sx = new Float32Array(w), sy = new Float32Array(h);
+    for (let x = 0; x < w; x++) sx[x] = tnCobertura(h, k => V[k * w + x], 24) / h;
+    for (let y = 0; y < h; y++) sy[y] = tnCobertura(w, k => Hh[y * w + k], 40) / w;
+    const xs = tnCandidatos(sx, 0.06, 12), ys = tnCandidatos(sy, 0.05, 12);
+    if (xs.length < 2 || ys.length < 2) { TN.grupos = []; return { ok: false, w, h, cv, xs, ys }; }
+    const R = ys.length - 1, C = xs.length - 1;
+    const vB = (x, y0, y1) => { let n = 0, t = 0; for (let y = y0 + 3; y <= y1 - 3; y++) { t++; for (let dx = -2; dx <= 2; dx++) if (V[y * w + Math.min(w - 1, Math.max(0, x + dx))]) { n++; break; } } return t ? n / t >= 0.8 : true; };
+    const hB = (y, x0, x1) => { let n = 0, t = 0; for (let x = x0 + 3; x <= x1 - 3; x++) { t++; for (let dy = -2; dy <= 2; dy++) if (Hh[Math.min(h - 1, Math.max(0, y + dy)) * w + x]) { n++; break; } } return t ? n / t >= 0.8 : true; };
+    const padre = Array.from({ length: R * C }, (_, i) => i), raiz = a => { while (padre[a] !== a) { padre[a] = padre[padre[a]]; a = padre[a]; } return a; }, une = (a, b) => { padre[raiz(a)] = raiz(b); };
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
+      if (c < C - 1 && !vB(xs[c + 1], ys[r], ys[r + 1])) une(r * C + c, r * C + c + 1);
+      if (r < R - 1 && !hB(ys[r + 1], xs[c], xs[c + 1])) une(r * C + c, (r + 1) * C + c);
+    }
+    // cada grupo pasa a ser el rectángulo que lo contiene
+    let cambio = true, vuelta = 0;
+    while (cambio && vuelta++ < 20) {
+      cambio = false; const bb = {};
+      for (let i = 0; i < R * C; i++) { const g = raiz(i), r = Math.floor(i / C), c = i % C, b = bb[g] || (bb[g] = { r0: r, r1: r, c0: c, c1: c }); b.r0 = Math.min(b.r0, r); b.r1 = Math.max(b.r1, r); b.c0 = Math.min(b.c0, c); b.c1 = Math.max(b.c1, c); }
+      Object.values(bb).forEach(b => { for (let r = b.r0; r <= b.r1; r++) for (let c = b.c0; c <= b.c1; c++) if (raiz(r * C + c) !== raiz(b.r0 * C + b.c0)) { une(r * C + c, b.r0 * C + b.c0); cambio = true; } });
+    }
+    const gr = {};
+    for (let i = 0; i < R * C; i++) { const g = raiz(i), r = Math.floor(i / C), c = i % C, b = gr[g] || (gr[g] = { r0: r, r1: r, c0: c, c1: c, texto: '' }); b.r0 = Math.min(b.r0, r); b.r1 = Math.max(b.r1, r); b.c0 = Math.min(b.c0, c); b.c1 = Math.max(b.c1, c); }
+    TN.grupos = Object.values(gr).sort((a, b) => a.r0 - b.r0 || a.c0 - b.c0); TN.R = R; TN.C = C;
+    return { ok: true, w, h, cv, xs, ys };
+  }
+  function tnPintar(res) {
+    const z = $('#tnZona');
+    let head = '';
+    if (res && res.cv) {
+      const o = document.createElement('canvas'); o.width = res.w; o.height = res.h; const c = o.getContext('2d'); c.drawImage(res.cv, 0, 0);
+      c.strokeStyle = '#0b6cc0'; c.lineWidth = 1; c.setLineDash([4, 3]);
+      res.xs.forEach(x => { c.beginPath(); c.moveTo(x + .5, 0); c.lineTo(x + .5, res.h); c.stroke(); });
+      res.ys.forEach(y => { c.beginPath(); c.moveTo(0, y + .5); c.lineTo(res.w, y + .5); c.stroke(); });
+      head = `<p class="pnota">Imagen con las líneas detectadas (en azul discontinuo). Si faltan o sobran, cambia la «Sensibilidad» y pulsa «Detectar de nuevo».</p><img id="tnVista" alt="Líneas detectadas" src="${o.toDataURL()}">`;
+      if (!res.ok) { z.innerHTML = head + '<p class="tb-prob" style="margin-left:0">⚠ No he podido detectar una cuadrícula: recorta la captura para que solo salga la tabla, con sus líneas visibles, o crea una cuadrícula en blanco.</p>'; return; }
+    }
+    if (!TN.grupos.length) { z.innerHTML = head; return; }
+    const cab = Math.max(0, parseInt($('#tnCab').value) || 0);
+    let t = '<table class="tn-rej">';
+    for (let r = 0; r < TN.R; r++) t += '<tr>' + TN.grupos.map((g, i) => g.r0 === r ? `<td rowspan="${g.r1 - g.r0 + 1}" colspan="${g.c1 - g.c0 + 1}" class="${r < cab ? 'cab' : ''}"><textarea data-tn="${i}" rows="2" placeholder="${r < cab ? 'Cabecera' : 'Texto'}">${esc(g.texto)}</textarea></td>` : '').join('') + '</tr>';
+    t += '</table>';
+    z.innerHTML = head + `<p class="pnota"><b>${TN.R} fila${TN.R > 1 ? 's' : ''} × ${TN.C} columna${TN.C > 1 ? 's' : ''}</b>${TN.grupos.some(g => g.r1 > g.r0 || g.c1 > g.c0) ? ' · con celdas combinadas' : ''}. Rellena el texto de cada celda:</p>${t}<div class="tb-acc"><button id="tnGenerar" class="primary" type="button">Generar HTML con el estilo del ejemplo</button></div>`;
+  }
+  function tnPlantilla(html) {
+    const P = { tabla: '<table style="width: 99%;" align="center">', cab: '<td>', cuerpo: '<td>', thead: false, tbody: true, fmt: 'style', envC: null, envB: null };
+    const r = html.trim() ? tbAnalizar(html)[0] : null; if (!r || r.sinFilas || !r.celdas.length) return P;
+    const limpia = tag => tbQuitarAncho(tag).replace(/\s(rowspan|colspan)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/ig, '');
+    P.tabla = r.t.tag; P.fmt = r.fmtDet; P.cab = limpia(r.celdas[0].tag);
+    P.thead = /<thead\b/i.test(html.slice(r.t.finTag, r.celdas[0].ini)); P.tbody = /<tbody\b/i.test(html.slice(r.t.finTag, r.t.cierre));
+    const env = (ini, nom) => { const fin = html.indexOf('</' + nom, ini); if (fin < 0) return null; const m = /^\s*<(strong|b|p|span|em|font)\b([^>]*)>[\s\S]*<\/\1>\s*$/i.exec(html.slice(ini, fin)); return m ? { a: `<${m[1]}${m[2]}>`, c: `</${m[1]}>` } : null; };
+    P.envC = env(r.celdas[0].fin, /^<(\w+)/.exec(r.celdas[0].tag)[1]);
+    const resto = html.slice(r.filaFin, r.t.cierre), c = /<(td|th)\b[^>]*>/i.exec(resto);
+    if (c) { P.cuerpo = limpia(c[0]); P.envB = env(r.filaFin + c.index + c[0].length, c[1]); }
+    return P;
+  }
+  function tnGenerarHtml() {
+    const P = tnPlantilla($('#tnEjemplo').value), cab = Math.max(0, parseInt($('#tnCab').value) || 0), C = TN.C;
+    const nomC = /^<(\w+)/.exec(P.cab)[1], nomB = /^<(\w+)/.exec(P.cuerpo)[1], pct = Math.round(100 / C);
+    const celda = (g, esCab, ult) => {
+      let tag = esCab ? P.cab : P.cuerpo; const env = esCab ? P.envC : P.envB, nom = esCab ? nomC : nomB;
+      const ext = (g.r1 > g.r0 ? ` rowspan="${g.r1 - g.r0 + 1}"` : '') + (g.c1 > g.c0 ? ` colspan="${g.c1 - g.c0 + 1}"` : '');
+      tag = tag.replace(/\s*\/?>$/, m => ext + m.trim());
+      if (g.r0 === 0 && !ult && C > 1) tag = tbPonerAncho(tag, (pct * (g.c1 - g.c0 + 1)) + '%', P.fmt);
+      const tx = tnTexto(g.texto);
+      return tag + (env ? env.a + tx + env.c : tx) + `</${nom}>`;
+    };
+    const fila = r => { const gs = TN.grupos.filter(g => g.r0 === r).sort((a, b) => a.c0 - b.c0); return '<tr>\n' + gs.map((g, i) => celda(g, r < cab, i === gs.length - 1)).join('\n') + '\n</tr>'; };
+    const cuerpo = [], cabeza = [];
+    for (let r = 0; r < TN.R; r++) (r < cab ? cabeza : cuerpo).push(fila(r));
+    let out = tbPonerAncho(P.tabla, ($('#tbAncho').value || 99) + '%', P.fmt) + '\n';
+    if (cabeza.length) out += (P.thead ? '<thead>\n' + cabeza.join('\n') + '\n</thead>\n' : '') + (P.thead ? '' : cabeza.join('\n') + '\n');
+    if (cuerpo.length) out += (P.tbody ? '<tbody>\n' + cuerpo.join('\n') + '\n</tbody>\n' : cuerpo.join('\n') + '\n');
+    return out + '</table>';
+  }
+  async function tnCargar(file) {
+    if (!file || !/^image\//.test(file.type)) { toast('Ese archivo no es una imagen', true); return; }
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => { TN.img = img; $('#tnDet').open = true; const r = tnDetectar(); tnPintar(r); URL.revokeObjectURL(url); };
+    img.onerror = () => toast('No he podido leer la imagen', true); img.src = url;
+  }
+  $('#tnArchivo').onchange = ev => { tnCargar(ev.target.files[0]); ev.target.value = ''; };
+  $('#tnDetectar').onclick = () => { if (!TN.img) { toast('Primero elige una imagen', true); return; } tnPintar(tnDetectar()); };
+  $('#tnCab').oninput = () => { if (TN.grupos.length) { const t = {}; document.querySelectorAll('#tnZona [data-tn]').forEach(a => t[a.dataset.tn] = a.value); tnPintar(null); document.querySelectorAll('#tnZona [data-tn]').forEach(a => a.value = t[a.dataset.tn] || ''); } };
+  $('#tnBlanco').onclick = () => {
+    const R = Math.min(60, Math.max(1, parseInt($('#tnFil').value) || 1)), C = Math.min(12, Math.max(1, parseInt($('#tnCol').value) || 1));
+    TN.img = null; TN.R = R; TN.C = C; TN.grupos = [];
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) TN.grupos.push({ r0: r, r1: r, c0: c, c1: c, texto: '' });
+    tnPintar(null);
+  };
+  $('#tnZona').addEventListener('input', ev => { const i = ev.target.dataset && ev.target.dataset.tn; if (i != null) TN.grupos[Number(i)].texto = ev.target.value; });
+  $('#tnZona').addEventListener('click', ev => {
+    if (!ev.target.closest('#tnGenerar')) return;
+    $('#tbEntrada').value = tnGenerarHtml(); tbRevisar(); $('#tbResultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast('Tabla generada: ajusta los porcentajes si quieres y copia el HTML ✓');
+  });
+  document.addEventListener('paste', ev => {
+    if (!document.body.classList.contains('en-tablas')) return;
+    const it = [...(ev.clipboardData ? ev.clipboardData.items : [])].find(x => x.kind === 'file' && /^image\//.test(x.type));
+    if (it) { ev.preventDefault(); tnCargar(it.getAsFile()); }
+  });
+  ['dragover', 'dragenter'].forEach(n => $('#tnDet').addEventListener(n, ev => { ev.preventDefault(); $('#tnDet').classList.add('arrastrando'); }));
+  ['dragleave', 'drop'].forEach(n => $('#tnDet').addEventListener(n, ev => { ev.preventDefault(); $('#tnDet').classList.remove('arrastrando'); }));
+  $('#tnDet').addEventListener('drop', ev => { const f = ev.dataTransfer && ev.dataTransfer.files[0]; if (f) tnCargar(f); });
 
   /* ---- añadir a productividad desde el proceso ---- */
   async function filaDeProceso(iso) {
