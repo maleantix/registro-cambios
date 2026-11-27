@@ -371,8 +371,14 @@ button:disabled{opacity:.55;cursor:wait}
             <input type="number" id="tnCol" value="3" min="1" max="12" style="width:64px"> columnas
             <button id="tnBlanco" type="button">Crear</button>
           </div>
+          <div class="tb-acc"><button id="tnLimpiar" type="button">🧹 Limpiar y empezar otra</button></div>
           <div id="tnZona"></div>
         </div>
+      </details>
+      <details class="tn-det2" id="tbEstilosDet"><summary>🎨 Estilos de la vista previa (CSS del portal)</summary>
+        <p class="pnota">Es una aproximación a los estilos del portal. Si pegas aquí el CSS real (el de la clase de tu tabla), la vista previa se verá igual que en el portal. Se guarda en este navegador.</p>
+        <textarea id="tbCss" rows="6" spellcheck="false" style="width:100%;font-family:Consolas,monospace;font-size:13px"></textarea>
+        <button id="tbCssRest" type="button">Restaurar estilos por defecto</button>
       </details>
       <textarea id="tbEntrada" rows="9" spellcheck="false" placeholder="Pega aquí el código HTML (una tabla o la página entera)…"></textarea>
       <div class="tb-opc">
@@ -380,7 +386,7 @@ button:disabled{opacity:.55;cursor:wait}
         <label>Ancho de la tabla <input id="tbAncho" type="number" value="99" min="1" max="100" step="1"></label>
         <label>Formato del ancho <select id="tbFmt"><option value="auto">Detectar el que usas</option><option value="style">style="width:20%"</option><option value="attr">width="20%"</option></select></label>
         <label class="inline"><input type="checkbox" id="tbOtras"> Quitar también los anchos de las demás filas</label>
-        <button id="tbLimpiar">Limpiar</button>
+        <button id="tbLimpiar" title="Vacía el código, la imagen, la rejilla y el resultado para empezar con otra tabla">🧹 Limpiar todo</button>
       </div>
       <div id="tbResultado"></div>
     </section>
@@ -1855,7 +1861,7 @@ button:disabled{opacity:.55;cursor:wait}
       if (el) el.textContent = `Suma de las columnas con ancho: ${Math.round(suma * 100) / 100} %. La última ocupa el resto (≈ ${Math.max(0, Math.round((tw - suma) * 100) / 100)} %)` + (suma > tw ? ' ⚠ pasa del ancho de la tabla' : '') + '.';
     });
     const tot = edits.length, rs = $('#tbResumen'); if (rs) rs.textContent = tot ? `${tot} etiqueta${tot > 1 ? 's' : ''} corregida${tot > 1 ? 's' : ''}.` : '✔ No hay nada que corregir.';
-    const v = $('#tbVista'); if (v) v.srcdoc = '<style>body{font:14px Arial,sans-serif;margin:8px}table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:4px}</style>' + out;
+    const v = $('#tbVista'); if (v) v.srcdoc = '<style>' + tbCssActual() + '</style>' + out;
   }
   function tbPintar() {
     const cont = $('#tbResultado');
@@ -1879,7 +1885,18 @@ button:disabled{opacity:.55;cursor:wait}
   function tbRevisar() { TB.html = $('#tbEntrada').value; TB.tablas = TB.html.trim() ? tbAnalizar(TB.html) : []; if (!TB.html.trim()) { $('#tbResultado').innerHTML = ''; toast('Pega primero el código HTML', true); return; } tbPintar(); }
   $('#tbRevisar').onclick = tbRevisar;
   $('#tbEntrada').addEventListener('paste', () => setTimeout(tbRevisar, 50));
-  $('#tbLimpiar').onclick = () => { $('#tbEntrada').value = ''; $('#tbResultado').innerHTML = ''; TB.tablas = []; $('#tbEntrada').focus(); };
+  const TB_CSS = 'body{font:14px Arial,sans-serif;margin:8px;color:#333}\ntable{border-collapse:collapse}\ntd,th{padding:4px 6px;vertical-align:top}\ntable.tinyTablaEncNaranja th,table.tinyTablaEncNaranja td{border:1px solid #999999}\ntable.tinyTablaEncNaranja th,table.tinyTablaEncNaranja thead td{background-color:#ff7900;color:#ffffff;font-weight:bold}\ntable.tinyTablaEncNaranja td{color:#000000;font-weight:normal}\ntable.tinyTablaEncNaranja thead td{color:#ffffff;font-weight:bold}';
+  const tbCssActual = () => { let v = ''; try { v = localStorage.getItem('rc-tbcss') || ''; } catch (e) {} return v.trim() ? v : TB_CSS; };
+  $('#tbCss').value = tbCssActual();
+  $('#tbCss').oninput = () => { try { localStorage.setItem('rc-tbcss', $('#tbCss').value); } catch (e) {} if ($('#tbVista') && $('#tbEntrada').value.trim()) tbRevisar(); };
+  $('#tbCssRest').onclick = () => { try { localStorage.removeItem('rc-tbcss'); } catch (e) {} $('#tbCss').value = TB_CSS; if ($('#tbVista') && $('#tbEntrada').value.trim()) tbRevisar(); };
+  const tbLimpiarTodo = () => {
+    $('#tbEntrada').value = ''; $('#tbResultado').innerHTML = ''; TB.tablas = [];
+    TN.img = null; TN.grupos = []; TN.R = 0; TN.C = 0; $('#tnZona').innerHTML = ''; $('#tnArchivo').value = ''; $('#tnCab').value = 1;
+    $('#tnDet').scrollIntoView({ block: 'start' }); toast('Limpio: puedes empezar con la siguiente tabla ✓');
+  };
+  $('#tbLimpiar').onclick = tbLimpiarTodo;
+  $('#tnLimpiar').onclick = tbLimpiarTodo;
   $('#tbFmt').onchange = $('#tbAncho').oninput = $('#tbOtras').onchange = () => { if (TB.tablas.length) tbGenerar(); };
   $('#tbResultado').addEventListener('input', ev => {
     const k = ev.target.dataset && ev.target.dataset.tb; if (!k) return;
